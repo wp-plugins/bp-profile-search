@@ -22,6 +22,8 @@ and, right after that, insert the BP Profile Search form:
 
 To customize the profile search form, use the plugin admin page *BuddyPress -> Profile Search*.
 
+Note: if you can’t access the plugin admin page, try renaming your plugin folder name from *bp-profile-search* to *profile-search* and reactivating the plugin.
+
 == Changelog ==
 
 = 1.0 =
