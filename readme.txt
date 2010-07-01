@@ -20,9 +20,9 @@ and, right after that, insert the BP Profile Search form:
 
 `<?php do_action ('bp_profile_search_form'); ?>`
 
-To customize the profile search form, use the plugin admin page *BuddyPress -> Profile Search*.
+To customize the profile search form, use the plugin admin page *BuddyPress -> Profile Search*. Since not all the profile field types are supported, those fields are not selectable in the plugin admin page.
 
-Note: if you can’t access the plugin admin page, try renaming your plugin folder name from *bp-profile-search* to *profile-search* and reactivating the plugin.
+Note: if you can\’t access the plugin admin page, try renaming your plugin folder name from *bp-profile-search* to *profile-search* and reactivating the plugin.
 
 == Changelog ==
 
