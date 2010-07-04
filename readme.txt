@@ -1,5 +1,5 @@
 === BP Profile Search ===
-Contributors: 
+Contributors: dontdream
 Tags: buddypress, profile, search
 Requires at least: 3.0
 Tested up to: 3.0
@@ -15,13 +15,15 @@ BP Profile Search adds a customizable search form to your BuddyPress Members pag
 
 After the standard manual or automatic plugin installation procedure, add the profile search form to your BuddyPress theme.
 
-If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line (around line 14):
+If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line (line 14):
 
 `</div><!-- #members-dir-search -->`
 
 and, right after that, insert the BP Profile Search form:
 
 `<?php do_action ('bp_profile_search_form'); ?>`
+
+If you are *not* using the BuddyPress default theme, you have to insert the BP Profile Search form somewhere in your theme Members page.
 
 To customize the profile search form, use the plugin admin page *BuddyPress -> Profile Search*. Since the *datebox*, *multiselectbox* and *checkbox* profile field types are not currently supported, those fields are not selectable in the plugin admin page.
 
