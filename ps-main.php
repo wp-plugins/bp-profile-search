@@ -4,7 +4,7 @@
 Plugin Name: BP Profile Search 
 Plugin URI: http://www.blogsweek.com/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 1.0
+Version: 2.0
 Author: Andrea Tarantini
 Author URI: http://www.blogsweek.com/
 */
@@ -18,7 +18,7 @@ include 'ps-admin.php';
 
 function ps_activate ()
 {
-	ps_set_default_options ();
+//	ps_set_default_options ();
 	return true;
 }
 
@@ -43,118 +43,122 @@ function ps_register_setting ()
 function ps_form ()
 {
 	global $bp;
+	global $field;
 	global $ps_options;
+	global $ps_search_form;
+
+	$ps_search_form = true;
 ?>
 
 <form action="" method="post" id="profile-edit-form" class="standard-form">
 
-	<?php echo $ps_options['message']; ?>
+<?php
+	echo $ps_options['message'];
 
-	<?php if (bp_has_profile ()): while (bp_profile_groups()): bp_the_profile_group(); ?>
+	if (bp_has_profile ()): while (bp_profile_groups ()):
+		bp_the_profile_group ();
 
-		<?php $group_empty = true; ?>
-		<?php while ( bp_profile_fields() ) : bp_the_profile_field(); ?>
-			<?php 
-				if (!in_array (bp_get_the_profile_field_id (), (array)$ps_options['fields']))  continue; 
-				else if ($group_empty == true)
+		$group_empty = true;
+		while (bp_profile_fields ()):
+			bp_the_profile_field ();
+
+			if (bp_get_the_profile_field_id () == $ps_options['agerange']):
+				$from = ($_POST["field_{$field->id}"] == '' && $_POST["field_{$field->id}_to"] == '')? $from = '': (int)$_POST["field_{$field->id}"];
+				$to = ($_POST["field_{$field->id}_to"] == '')? $to = $from: (int)$_POST["field_{$field->id}_to"];
+				if ($to < $from)  $to = $from;
+				$_POST["field_{$field->id}"] = $from;
+				$_POST["field_{$field->id}_to"] = $to;
+
+?>				<div class="datebox">
+					<label for="<?php bp_the_profile_field_input_name(); ?>">Age range</label>
+					<input style="width: 10%;" type="text" name="<?php bp_the_profile_field_input_name(); ?>" value="<?php echo $from; ?>" />
+					&nbsp;-&nbsp;
+					<input style="width: 10%;" type="text" name="<?php bp_the_profile_field_input_name(); ?>_to" value="<?php echo $to; ?>" />
+				</div>
+<?php		endif;
+
+			if (!in_array (bp_get_the_profile_field_id (), (array)$ps_options['fields']))  continue;
+
+				if ($group_empty == true)
 				{
 					echo '<h5>'. bp_get_the_profile_group_name (). ':</h5>';
 					$group_empty = false;
 				}
-			?>
+?>
+			<div <?php bp_field_css_class ('editfield'); ?>>
 
-			<div <?php bp_field_css_class( 'editfield' ) ?>>
+<?php			switch (bp_get_the_profile_field_type())
+				{
+				case 'textbox':
+?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
+					<input type="text" name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>" value="<?php bp_the_profile_field_edit_value(); ?>" />
+<?php				break;
 
-				<?php if ( 'textbox' == bp_get_the_profile_field_type() ) : ?>
+				case 'textarea':
+?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
+					<textarea rows="5" cols="40" name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_edit_value(); ?></textarea>
+<?php				break;
 
-					<label for="<?php bp_the_profile_field_input_name() ?>"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></label>
-					<input type="text" name="<?php bp_the_profile_field_input_name() ?>" id="<?php bp_the_profile_field_input_name() ?>" value="<?php bp_the_profile_field_edit_value() ?>" />
-
-				<?php endif; ?>
-
-				<?php if ( 'textarea' == bp_get_the_profile_field_type() ) : ?>
-
-					<label for="<?php bp_the_profile_field_input_name() ?>"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></label>
-					<textarea rows="5" cols="40" name="<?php bp_the_profile_field_input_name() ?>" id="<?php bp_the_profile_field_input_name() ?>"><?php bp_the_profile_field_edit_value() ?></textarea>
-
-				<?php endif; ?>
-
-				<?php if ( 'selectbox' == bp_get_the_profile_field_type() ) : ?>
-
-					<label for="<?php bp_the_profile_field_input_name() ?>"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></label>
-					<select name="<?php bp_the_profile_field_input_name() ?>" id="<?php bp_the_profile_field_input_name() ?>">
-						<?php bp_the_profile_field_options() ?>
+				case 'selectbox':
+?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
+					<select name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>">
+						<?php bp_the_profile_field_options(); ?>
 					</select>
+<?php				break;
 
-				<?php endif; ?>
-
-				<?php if ( 'multiselectbox' == bp_get_the_profile_field_type() ) : ?>
-
-					<label for="<?php bp_the_profile_field_input_name() ?>"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></label>
-					<select name="<?php bp_the_profile_field_input_name() ?>" id="<?php bp_the_profile_field_input_name() ?>" multiple="multiple">
-						<?php bp_the_profile_field_options() ?>
+				case 'multiselectbox':
+?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
+					<select name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>" multiple="multiple">
+						<?php bp_the_profile_field_options(); ?>
 					</select>
-
-					<?php if ( !bp_get_the_profile_field_is_required() ) : ?>
-						<a class="clear-value" href="javascript:clear( '<?php bp_the_profile_field_input_name() ?>' );"><?php _e( 'Clear', 'buddypress' ) ?></a>
+					<?php if (!bp_get_the_profile_field_is_required()): ?>
+						<a class="clear-value" href="javascript:clear('<?php bp_the_profile_field_input_name(); ?>');"><?php _e('Clear', 'buddypress'); ?></a>
 					<?php endif; ?>
+<?php				break;
 
-				<?php endif; ?>
-
-				<?php if ( 'radio' == bp_get_the_profile_field_type() ) : ?>
-
-					<div class="radio">
-						<span class="label"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></span>
-
-						<?php bp_the_profile_field_options() ?>
-
-						<?php if ( !bp_get_the_profile_field_is_required() ) : ?>
-							<a class="clear-value" href="javascript:clear( '<?php bp_the_profile_field_input_name() ?>' );"><?php _e( 'Clear', 'buddypress' ) ?></a>
+				case 'radio':
+?>					<div class="radio">
+						<span class="label"><?php bp_the_profile_field_name(); ?></span>
+						<?php bp_the_profile_field_options(); ?>
+						<?php if (!bp_get_the_profile_field_is_required()): ?>
+							<a class="clear-value" href="javascript:clear('<?php bp_the_profile_field_input_name(); ?>');"><?php _e('Clear', 'buddypress'); ?></a>
 						<?php endif; ?>
 					</div>
+<?php				break;
 
-				<?php endif; ?>
-
-				<?php if ( 'checkbox' == bp_get_the_profile_field_type() ) : ?>
-
-					<div class="checkbox">
-						<span class="label"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></span>
-
-						<?php bp_the_profile_field_options() ?>
+				case 'checkbox':
+?>					<div class="checkbox">
+						<span class="label"><?php bp_the_profile_field_name(); ?></span>
+						<?php bp_the_profile_field_options(); ?>
 					</div>
+<?php				break;
 
-				<?php endif; ?>
-
-				<?php if ( 'datebox' == bp_get_the_profile_field_type() ) : ?>
-
-					<div class="datebox">
-						<label for="<?php bp_the_profile_field_input_name() ?>_day"><?php bp_the_profile_field_name() ?> <?php if ( bp_get_the_profile_field_is_required() ) : ?><?php _e( '', 'buddypress' ) ?><?php endif; ?></label>
-
-						<select name="<?php bp_the_profile_field_input_name() ?>_day" id="<?php bp_the_profile_field_input_name() ?>_day">
-							<?php bp_the_profile_field_options( 'type=day' ) ?>
+				case 'datebox':
+?>					<div class="datebox">
+						<label for="<?php bp_the_profile_field_input_name(); ?>_day"><?php bp_the_profile_field_name(); ?></label>
+						<select name="<?php bp_the_profile_field_input_name(); ?>_day" id="<?php bp_the_profile_field_input_name(); ?>_day">
+							<?php bp_the_profile_field_options('type=day'); ?>
 						</select>
-
-						<select name="<?php bp_the_profile_field_input_name() ?>_month" id="<?php bp_the_profile_field_input_name() ?>_month">
-							<?php bp_the_profile_field_options( 'type=month' ) ?>
+						<select name="<?php bp_the_profile_field_input_name(); ?>_month" id="<?php bp_the_profile_field_input_name(); ?>_month">
+							<?php bp_the_profile_field_options('type=month'); ?>
 						</select>
-
-						<select name="<?php bp_the_profile_field_input_name() ?>_year" id="<?php bp_the_profile_field_input_name() ?>_year">
-							<?php bp_the_profile_field_options( 'type=year' ) ?>
+						<select name="<?php bp_the_profile_field_input_name(); ?>_year" id="<?php bp_the_profile_field_input_name(); ?>_year">
+							<?php bp_the_profile_field_options('type=year'); ?>
 						</select>
 					</div>
-
-				<?php endif; ?>
-
-				<p class="description"><?php bp_the_profile_field_description() ?></p>
+<?php				break;
+				}
+?>
+				<p class="description"><?php bp_the_profile_field_description(); ?></p>
 			</div>
 
-		<?php endwhile; ?>
-		<?php if ($group_empty == false)  echo '<br />'; ?>
+<?php 	endwhile;
+		if ($group_empty == false)  echo '<br />';
 
-	<?php endwhile; endif; ?>
-
+	endwhile; endif;
+?>
 	<div class="submit">
-		<input type="submit" name="members_search_submit" id="members_search_submit" value="<?php _e( 'Search', 'buddypress' ) ?>" />
+		<input type="submit" name="members_search_submit" id="members_search_submit" value="<?php _e('Search', 'buddypress'); ?>" />
 		<?php echo '<a href="'. $bp->root_domain. '/'. BP_MEMBERS_SLUG. '/">'. __('Clear Form', 'buddypress'). '</a>'; ?>
 	</div>
 
@@ -164,38 +168,87 @@ function ps_form ()
 </form>
 
 <?php
-	if ($_POST['bp_profile_search'] == true)  $_REQUEST['num'] = 99999;
+	if ($_POST['bp_profile_search'] == true)  $_REQUEST['num'] = 9999;
 }
 
 function ps_search ($results, $params)
 {
 	global $wpdb;
+	global $field;
+	global $ps_options;
 
 	if ($_POST['bp_profile_search'] != true)  return $results;
 
 	$noresults['users'] = array ();
 	$noresults['total'] = 0;
 
-	$fields = array ();
-	foreach ($_POST as $key => $value)
-		if ($value && preg_match ('/^field_([0-9]*)$/', $key, $matches))  
-			$fields[] = array ($matches[1], $value);
-
-	if (count ($fields) == 0)  return $noresults;
-
 	$sql = "SELECT DISTINCT user_id from {$wpdb->prefix}bp_xprofile_data";
 	$found = $wpdb->get_results ($sql);
 	$userids = ps_conv ($found, 'user_id');
+	$emptyform = true;
 
-	foreach ($fields as $field)
-	{
-		$sql = "SELECT DISTINCT user_id from {$wpdb->prefix}bp_xprofile_data";
-		$sql .= " WHERE field_id = '$field[0]' AND value = '$field[1]'";
-		$found = $wpdb->get_results ($sql);
-		$userids = array_intersect ($userids, ps_conv ($found, 'user_id'));
+	if (bp_has_profile ()):
+		while (bp_profile_groups ()):
+			bp_the_profile_group ();
+			while (bp_profile_fields ()): 
+				bp_the_profile_field ();
 
-		if (count ($userids) == 0)  return $noresults;
-	}
+				$id = bp_get_the_profile_field_id ();
+				$value = $_POST["field_$id"];
+				$to = $_POST["field_{$id}_to"];
+
+				if ($value == '' && $to == '')  continue;
+
+				switch (bp_get_the_profile_field_type ())
+				{
+				case 'textbox':
+				case 'textarea':
+					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql .= " WHERE field_id = $id AND value LIKE '$value'";
+					break;
+
+				case 'selectbox':
+				case 'radio':
+					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql .= " WHERE field_id = $id AND value = '$value'";
+					break;
+
+				case 'multiselectbox':
+				case 'checkbox':
+					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql .= " WHERE field_id = $id";
+					$like = array ();
+					foreach ($value as $curvalue)
+						$like[] = "value LIKE '%\"$curvalue\"%'";
+					$sql .= ' AND ('. implode (' OR ', $like). ')';	
+					break;
+
+				case 'datebox':
+					if ($id != $ps_options['agerange'])  continue;
+					
+					$time = time ();
+					$day = date ("j", $time);
+					$month = date ("n", $time);
+					$year = date ("Y", $time);
+					$min = mktime (0, 0, 0, $month, $day+1, $year-$to-1);	
+					$max = mktime (0, 0, 0, $month, $day, $year-$value);
+
+					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql .= " WHERE field_id = $id AND value BETWEEN $min AND $max";
+					break;
+				}
+
+				$found = $wpdb->get_results ($sql);
+				$userids = array_intersect ($userids, ps_conv ($found, 'user_id'));
+
+				if (count ($userids) == 0)  return $noresults;
+				$emptyform = false;
+
+			endwhile;
+		endwhile;
+	endif;
+
+	if ($emptyform == true)  return $noresults;
 
 	remove_filter ('bp_core_get_users', 'ps_search', 99, 2);
 
@@ -225,4 +278,65 @@ add_action ('admin_menu', 'ps_add_pages');
 add_action ('bp_profile_search_form', 'ps_form');
 add_filter ('bp_core_get_users', 'ps_search', 99, 2);
 
+add_filter ('bp_get_the_profile_field_options_select', 'ps_field_options', 99, 2);
+add_filter ('bp_get_the_profile_field_options_radio', 'ps_field_options', 99, 2);
+add_filter ('bp_get_the_profile_field_options_checkbox', 'ps_field_options', 99, 2);
+
+function ps_field_options ($html, $option)
+{
+	global $field;
+	global $ps_search_form;
+	
+	if ($ps_search_form != true)  return $html;
+
+	switch ($field->type)
+	{
+	case 'textbox':
+	case 'textarea':
+	case 'datebox':
+		break;
+
+	case 'selectbox':
+		if ($option->name == $_POST["field_$field->id"])
+			$selected = ' selected="selected"';
+		else
+			$selected = '';
+
+		$html = '<option'. $selected. ' value="'. esc_attr ($option->name). '">'.
+				esc_attr ($option->name). '</option>';
+		break;
+
+	case 'radio':
+		if ($option->name == $_POST["field_$field->id"])
+			$selected = ' checked="checked"';
+		else
+			$selected = '';
+
+		$html = '<label><input'. $selected. ' type="radio" name="field_'. $field->id. '" value="'.
+				esc_attr ($option->name). '"> '. esc_attr ($option->name). '</label>';
+		break;
+
+	case 'multiselectbox':
+		if (is_array ($_POST["field_$field->id"]) && in_array ($option->name, $_POST["field_$field->id"]))
+			$selected = ' selected="selected"';
+		else
+			$selected = '';
+
+		$html = '<option'. $selected. ' value="'. esc_attr ($option->name). '">'.
+				esc_attr ($option->name). '</option>';
+		break;
+
+	case 'checkbox':
+		if (is_array ($_POST["field_$field->id"]) && in_array ($option->name, $_POST["field_$field->id"]))
+			$selected = ' checked="checked"';
+		else
+			$selected = '';
+
+		$html = '<label><input'. $selected. ' type="checkbox" name="field_'. $field->id. '[]" value="'.
+				esc_attr ($option->name). '"> '. esc_attr ($option->name). '</label>';
+		break;
+	}
+
+	return $html;
+}
 ?>
