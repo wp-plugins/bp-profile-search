@@ -4,7 +4,7 @@
 Plugin Name: BP Profile Search 
 Plugin URI: http://www.blogsweek.com/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 2.0
+Version: 2.1
 Author: Andrea Tarantini
 Author URI: http://www.blogsweek.com/
 */
@@ -18,7 +18,7 @@ include 'ps-admin.php';
 
 function ps_activate ()
 {
-//	ps_set_default_options ();
+	ps_set_default_options ();
 	return true;
 }
 
@@ -52,9 +52,17 @@ function ps_form ()
 
 <form action="" method="post" id="profile-edit-form" class="standard-form">
 
-<?php
-	echo $ps_options['message'];
+<div class="item-list-tabs">
+	<ul>
+	<li><?php echo $ps_options['header']; ?><p></p></li>
+<?php if (in_array ('on', (array)$ps_options['show'])) { ?>
+	<li class="last filter"><?php echo $ps_options['message']; ?>&nbsp;<input id="bps_Show" type="checkbox" onclick="javascript:bps_toggleForm()" /></li>
+<?php } ?>
+	</ul>
+</div>
 
+<div id="bps_Form">
+<?php
 	if (bp_has_profile ()): while (bp_profile_groups ()):
 		bp_the_profile_group ();
 
@@ -167,12 +175,29 @@ function ps_form ()
 
 </form>
 
+<?php if (in_array ('on', (array)$ps_options['show'])) { ?>
+<script type="text/javascript">
+	function bps_toggleForm () {
+		if (jQuery('#bps_Show').is(':checked'))
+			jQuery('#bps_Form').show();
+		else
+			jQuery('#bps_Form').hide();
+	}
+
+	jQuery(document).ready(function() {
+		bps_toggleForm ();
+	});
+</script>
+<?php } ?>
+
+</div>
 <?php
 	if ($_POST['bp_profile_search'] == true)  $_REQUEST['num'] = 9999;
 }
 
 function ps_search ($results, $params)
 {
+	global $bp;
 	global $wpdb;
 	global $field;
 	global $ps_options;
@@ -182,7 +207,7 @@ function ps_search ($results, $params)
 	$noresults['users'] = array ();
 	$noresults['total'] = 0;
 
-	$sql = "SELECT DISTINCT user_id from {$wpdb->prefix}bp_xprofile_data";
+	$sql = "SELECT DISTINCT user_id from {$bp->profile->table_name_data}";
 	$found = $wpdb->get_results ($sql);
 	$userids = ps_conv ($found, 'user_id');
 	$emptyform = true;
@@ -203,19 +228,19 @@ function ps_search ($results, $params)
 				{
 				case 'textbox':
 				case 'textarea':
-					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
 					$sql .= " WHERE field_id = $id AND value LIKE '$value'";
 					break;
 
 				case 'selectbox':
 				case 'radio':
-					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
 					$sql .= " WHERE field_id = $id AND value = '$value'";
 					break;
 
 				case 'multiselectbox':
 				case 'checkbox':
-					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
 					$sql .= " WHERE field_id = $id";
 					$like = array ();
 					foreach ($value as $curvalue)
@@ -233,7 +258,7 @@ function ps_search ($results, $params)
 					$min = mktime (0, 0, 0, $month, $day+1, $year-$to-1);	
 					$max = mktime (0, 0, 0, $month, $day, $year-$value);
 
-					$sql = "SELECT user_id from {$wpdb->prefix}bp_xprofile_data";
+					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
 					$sql .= " WHERE field_id = $id AND value BETWEEN $min AND $max";
 					break;
 				}

@@ -13,9 +13,11 @@ function ps_set_default_options ()
 	global $ps_define;
 	global $ps_options;
 
-	$ps_options['message'] = '
+	$ps_options['header'] = '
 <h4>Profile Search</h4>
 <p>You can find site members searching their public profiles. Search by any or all of the fields below:</p>';
+	$ps_options['show'] = array ('on');
+	$ps_options['message'] = 'Show Search Form';
 
 	$ps_options['fields'] = array ();
 	$ps_options['agerange'] = 0;
@@ -47,13 +49,19 @@ function ps_admin_page ()
 	<?php settings_fields ($ps_define->option_group); ?>
 	<?php $ps_options = get_option ($ps_define->option_name); ?>
 
-	<p>Customize your Profile Search here. Select the search message text 
-	and the profile fields to be included in the profile search form.</p>
+	<p>Customize your profile search form here. Select the header text and
+	the profile fields to be included in the search form.</p>
 
 	<table class="form-table">
 
-	<tr valign="top"><th scope="row">Search Message:</th>
-	  <td><textarea name="ps-options[message]" rows="4" cols="50" class="large-text code"><?php echo $ps_options['message']; ?></textarea></td>
+	<tr valign="top"><th scope="row">Search Form Header:</th>
+	  <td><textarea name="ps-options[header]" rows="4" cols="50" class="large-text code"><?php echo $ps_options['header']; ?></textarea></td>
+	</tr>
+	<tr valign="top"><th scope="row">Show/Hide Form:</th>
+	  <td><label><input type="checkbox" name="ps-options[show][]" value="on"<?php if (in_array ('on', (array)$ps_options['show'])) echo ' checked="checked"'; ?> /> Enabled</label></td>
+	</tr>
+	<tr valign="top"><th scope="row">Show Form Message:</th>
+	  <td><input type="text" name="ps-options[message]" value="<?php echo $ps_options['message']; ?>"  /></td>
 	</tr>
 
 	<tr valign="top"><th scope="row">Selected Profile Fields:</th>
@@ -108,7 +116,7 @@ endif; ?>
 	</table>
 
 	<p class="submit">
-	  <input type="submit" class="button-primary" value="<?php _e('Save Settings') ?>" />
+	  <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 	</p>
 
   </form>

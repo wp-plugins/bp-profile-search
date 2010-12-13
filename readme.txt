@@ -2,8 +2,8 @@
 Contributors: dontdream
 Tags: buddypress, profile, search
 Requires at least: 3.0
-Tested up to: 3.0.1
-Stable tag: 2.0
+Tested up to: 3.0.3
+Stable tag: 2.1
 
 Adds a customizable search form to your BuddyPress Members page, so visitors can find site members searching their public profiles.
 
@@ -31,6 +31,9 @@ Note: if you can't access the plugin admin page, try renaming your plugin folder
 
 == Changelog ==
 
+= 2.1 =
+* Added the option to show/hide the search form
+* Fixed a bug where no results were found in some installations
 = 2.0 =
 * Added support for *multiselectbox* and *checkbox* profile fields
 * Added support for % and _ wildcard characters in text searching
