@@ -1,9 +1,8 @@
 === BP Profile Search ===
-Contributors: dontdream
 Tags: buddypress, profile, search
 Requires at least: 3.0
 Tested up to: 3.0.3
-Stable tag: 2.1
+Stable tag: 2.2
 
 Adds a customizable search form to your BuddyPress Members page, so visitors can find site members searching their public profiles.
 
@@ -11,9 +10,19 @@ Adds a customizable search form to your BuddyPress Members page, so visitors can
 
 BP Profile Search adds a customizable search form to your BuddyPress Members page, so visitors can find site members searching their public profiles.
 
+Features:
+
+BP Profile Search shows a collapsible search form in your Members page. The form header text and the profile fields to include in the search are configurable from the admin page.
+
+BP Profile Search by default returns exact matches only, but users can request a fuzzy search using the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character. So, for instance, a search for *%John%* matches *John*, *Johnson*, *Long John Silver* and so on.
+
+If your extended profiles include a birth date field, BP Profile Search can also perform age range searches, allowing users to enter the minimum and maximum age for their search.
+
+In the back end, BP Profile Search allows to customize the search form header text, select the profile fields to include in the search, enable the show/hide form feature, enable and customize the age range search feature.
+
 == Installation ==
 
-After the standard manual or automatic plugin installation procedure, add the profile search form to your BuddyPress theme.
+After the standard manual or automatic plugin installation procedure, add the profile search form to your BuddyPress Members page.
 
 If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line (line 14):
 
@@ -31,6 +40,8 @@ Note: if you can't access the plugin admin page, try renaming your plugin folder
 
 == Changelog ==
 
+= 2.2 =
+* Added the Age Range Search option
 = 2.1 =
 * Added the option to show/hide the search form
 * Fixed a bug where no results were found in some installations
