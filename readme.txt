@@ -1,28 +1,38 @@
 === BP Profile Search ===
-Tags: buddypress, profile, search
+Tags: buddypress, profile, profiles, search, filter
 Requires at least: 3.0
-Tested up to: 3.0.3
-Stable tag: 2.2
+Tested up to: 3.0.4
+Stable tag: 2.3
 
-Adds a customizable search form to your BuddyPress Members page, so visitors can find site members searching their public profiles.
+Adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
 
 == Description ==
 
-BP Profile Search adds a customizable search form to your BuddyPress Members page, so visitors can find site members searching their public profiles.
+BP Profile Search adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
 
 Features:
 
-BP Profile Search shows a collapsible search form in your Members page. The form header text and the profile fields to include in the search are configurable from the admin page.
+BP Profile Search shows your visitors a form to search or filter your Members directory. In the plugin admin page you can access the following options:
 
-BP Profile Search by default returns exact matches only, but users can request a fuzzy search using the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character. So, for instance, a search for *%John%* matches *John*, *Johnson*, *Long John Silver* and so on.
+* specify the text for the form header and welcome message (HTML enabled);
 
-If your extended profiles include a birth date field, BP Profile Search can also perform age range searches, allowing users to enter the minimum and maximum age for their search.
+* enable the show/hide form feature;
 
-In the back end, BP Profile Search allows to customize the search form header text, select the profile fields to include in the search, enable the show/hide form feature, enable and customize the age range search feature.
+* select the profile fields to include in the search form (currently the *datebox* profile fields are not supported);
+
+* if your extended profiles include a birth date field, enable the Age Range search, so your visitors can specify the minimum and maximum age for their search;
+
+* select the search mode for text fields, between:
+-- partial match, where a search for <i>John</i> matches field values of <i>John</i>, <i>Johnson</i>, <i>Long John Silver</i>, and so on;
+-- exact match, where a search for <i>John</i> matches the field value <i>John</i> only.
+
+In both modes the wildcard characters <i>% (percent sign)</i>, matching zero or more characters, and <i>_ (underscore)</i>, matching exactly one character, are available to your visitors to better specify their search.
 
 == Installation ==
 
-After the standard manual or automatic plugin installation procedure, add the profile search form to your BuddyPress Members page.
+After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin admin page *BuddyPress -> Profile Search*.
+
+Before you can use the plugin, you have to add the profile search form to your BuddyPress Members page.
 
 If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line (line 14):
 
@@ -34,12 +44,15 @@ and, right after that, insert the BP Profile Search form:
 
 If you are *not* using the BuddyPress default theme, you have to insert the BP Profile Search form somewhere in your theme Members page.
 
-To customize the profile search form, use the plugin admin page *BuddyPress -> Profile Search*. Since the *datebox* profile fields are not currently supported, those fields are not selectable in the plugin admin page.
+== Troubleshooting ==
 
-Note: if you can't access the plugin admin page, try renaming your plugin folder name from *bp-profile-search* to *profile-search* and reactivating the plugin.
+* If any search always returns the full members list, and the search results appear in a widget instead, remove that widget from the Members page.
 
 == Changelog ==
 
+= 2.3 =
+* Added the choice between partial match and exact match for text searches
+* Added a workaround so renaming the plugin folder is no longer required
 = 2.2 =
 * Added the Age Range Search option
 = 2.1 =
@@ -47,6 +60,6 @@ Note: if you can't access the plugin admin page, try renaming your plugin folder
 * Fixed a bug where no results were found in some installations
 = 2.0 =
 * Added support for *multiselectbox* and *checkbox* profile fields
-* Added support for % and _ wildcard characters in text searching
+* Added support for % and _ wildcard characters in text searches
 = 1.0 =
 * First version released to the WordPress Plugin Directory

@@ -104,7 +104,10 @@ function ps_search ($results, $params)
 				case 'textbox':
 				case 'textarea':
 					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					$sql .= " WHERE field_id = $id AND value LIKE '$value'";
+					if ($ps_options['searchmode'] == 'Partial Match')
+						$sql .= " WHERE field_id = $id AND value LIKE '%%$value%%'";
+					else					
+						$sql .= " WHERE field_id = $id AND value LIKE '$value'";
 					break;
 
 				case 'selectbox':
