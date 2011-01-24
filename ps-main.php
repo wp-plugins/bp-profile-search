@@ -3,7 +3,7 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.blogsweek.com/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 2.2
+Version: 2.3
 Author: Andrea Tarantini
 Author URI: http://www.blogsweek.com/
 */
@@ -34,7 +34,7 @@ function ps_register_setting ()
 	return true;
 }
 
-add_action ('admin_menu', 'ps_add_pages');
+add_action ('admin_menu', 'ps_add_pages', 20);
 function ps_add_pages ()
 {
 	add_submenu_page ('bp-general-settings', 'Profile Search Setup', 'Profile Search', 'manage_options', 'ps-settings', 'ps_admin');
@@ -51,7 +51,8 @@ function ps_set_default_options ()
 	$ps_options['fields'] = array ();
 	$ps_options['agerange'] = 0;
 	$ps_options['agelabel'] = 'Age Range';
-	$ps_options['agedesc'] = 'enter the minimum and maximum age you are looking for';
+	$ps_options['agedesc'] = 'enter the minimum and maximum age for your search';
+	$ps_options['searchmode'] = 'Partial Match';
 
 	update_option ('ps_options', $ps_options);
 	return true;
@@ -110,6 +111,17 @@ function ps_admin ()
 	</td></tr>
 	<tr valign="top"><th scope="row">Search Field Description:</th><td>
 		<input type="text" name="ps_options[agedesc]" value="<?php echo $ps_options['agedesc']; ?>" class="large-text" />
+	</td></tr>
+	</table>
+	
+	<h3>Text Search Mode</h3>
+
+	<p>Select your text search mode here. Choose between partial match (a search for <i>John</i> matches <i>John</i>, <i>Johnson</i>, <i>Long John Silver</i>, and so on) and exact match (a search for <i>John</i> matches <i>John</i> only). In both modes the wildcard characters <i>% (percent sign)</i>, matching zero or more characters, and <i>_ (underscore)</i>, matching exactly one character, may be used.</p>	
+
+	<table class="form-table">
+	<tr valign="top"><th scope="row">Text Search Mode:</th><td>
+		<label><input type="radio" name="ps_options[searchmode]" value="Partial Match"<?php if ('Partial Match' == $ps_options['searchmode']) echo ' checked="checked"'; ?> /> Partial Match</label><br />
+		<label><input type="radio" name="ps_options[searchmode]" value="Exact Match"<?php if ('Exact Match' == $ps_options['searchmode']) echo ' checked="checked"'; ?> /> Exact Match</label><br />
 	</td></tr>
 	</table>
 
