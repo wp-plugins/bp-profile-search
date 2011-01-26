@@ -14,7 +14,7 @@ Features:
 
 BP Profile Search shows your visitors a form to search or filter your Members directory. In the plugin admin page you can access the following options:
 
-* specify the text for the form header and welcome message (HTML enabled);
+* specify the text for the form header or welcome message (HTML enabled);
 
 * enable the show/hide form feature;
 
@@ -23,10 +23,10 @@ BP Profile Search shows your visitors a form to search or filter your Members di
 * if your extended profiles include a birth date field, enable the Age Range search, so your visitors can specify the minimum and maximum age for their search;
 
 * select the search mode for text fields, between:
--- partial match, where a search for <i>John</i> matches field values of <i>John</i>, <i>Johnson</i>, <i>Long John Silver</i>, and so on;
--- exact match, where a search for <i>John</i> matches the field value <i>John</i> only.
+-- partial match, where a search for *John* matches field values of *John*, *Johnson*, *Long John Silver*, and so on;
+-- exact match, where a search for *John* matches the field value *John* only.
 
-In both modes the wildcard characters <i>% (percent sign)</i>, matching zero or more characters, and <i>_ (underscore)</i>, matching exactly one character, are available to your visitors to better specify their search.
+In both modes the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character, are available to your visitors to better specify their search.
 
 == Installation ==
 
