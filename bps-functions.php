@@ -1,7 +1,7 @@
 <?php
-include 'ps-searchform.php';
+include 'bps-searchform.php';
 
-function ps_fields ($name, $values)
+function bps_fields ($name, $values)
 {
 	global $field;
 	global $dateboxes;
@@ -48,7 +48,7 @@ else
 	return true;
 }
 
-function ps_agerange ($name, $value)
+function bps_agerange ($name, $value)
 {
 	global $dateboxes;
 
@@ -69,22 +69,25 @@ function ps_agerange ($name, $value)
 	return true;
 }
 
-add_filter ('bp_core_get_users', 'ps_search', 99, 2);
-function ps_search ($results, $params)
+add_filter ('bp_core_get_users', 'bps_search', 99, 2);
+function bps_search ($results, $params)
 {
 	global $bp;
 	global $wpdb;
-	global $field;
-	global $ps_options;
+	global $bps_list;
+	global $bps_options;
 
 	if ($_POST['bp_profile_search'] != true)  return $results;
+
+	$bps_list += 1;
+	if ($bps_list != $bps_options['filtered'])  return $results;
 
 	$noresults['users'] = array ();
 	$noresults['total'] = 0;
 
 	$sql = "SELECT DISTINCT user_id from {$bp->profile->table_name_data}";
 	$found = $wpdb->get_results ($sql);
-	$userids = ps_conv ($found, 'user_id');
+	$userids = bps_conv ($found, 'user_id');
 	$emptyform = true;
 
 	if (bp_has_profile ()):
@@ -104,7 +107,7 @@ function ps_search ($results, $params)
 				case 'textbox':
 				case 'textarea':
 					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					if ($ps_options['searchmode'] == 'Partial Match')
+					if ($bps_options['searchmode'] == 'Partial Match')
 						$sql .= " WHERE field_id = $id AND value LIKE '%%$value%%'";
 					else					
 						$sql .= " WHERE field_id = $id AND value LIKE '$value'";
@@ -127,7 +130,7 @@ function ps_search ($results, $params)
 					break;
 
 				case 'datebox':
-					if ($id != $ps_options['agerange'])  continue;
+					if ($id != $bps_options['agerange'])  continue;
 					
 					$time = time ();
 					$day = date ("j", $time);
@@ -142,7 +145,7 @@ function ps_search ($results, $params)
 				}
 
 				$found = $wpdb->get_results ($sql);
-				$userids = array_intersect ($userids, ps_conv ($found, 'user_id'));
+				$userids = array_intersect ($userids, bps_conv ($found, 'user_id'));
 
 				if (count ($userids) == 0)  return $noresults;
 				$emptyform = false;
@@ -153,7 +156,7 @@ function ps_search ($results, $params)
 
 	if ($emptyform == true)  return $noresults;
 
-	remove_filter ('bp_core_get_users', 'ps_search', 99, 2);
+	remove_filter ('bp_core_get_users', 'bps_search', 99, 2);
 
 	$params['per_page'] = count ($userids);
 	$params['include'] = $wpdb->escape (implode (',', $userids));
@@ -162,7 +165,7 @@ function ps_search ($results, $params)
 	return $results;
 }
 
-function ps_conv ($objects, $field)
+function bps_conv ($objects, $field)
 {
 	$array = array ();
 
@@ -172,16 +175,16 @@ function ps_conv ($objects, $field)
 	return $array;	
 }
 
-add_filter ('bp_get_the_profile_field_options_select', 'ps_field_options', 99, 2);
-add_filter ('bp_get_the_profile_field_options_radio', 'ps_field_options', 99, 2);
-add_filter ('bp_get_the_profile_field_options_checkbox', 'ps_field_options', 99, 2);
+add_filter ('bp_get_the_profile_field_options_select', 'bps_field_options', 99, 2);
+add_filter ('bp_get_the_profile_field_options_radio', 'bps_field_options', 99, 2);
+add_filter ('bp_get_the_profile_field_options_checkbox', 'bps_field_options', 99, 2);
 
-function ps_field_options ($html, $option)
+function bps_field_options ($html, $option)
 {
 	global $field;
-	global $ps_search_form;
+	global $bps_search_form;
 	
-	if ($ps_search_form != true)  return $html;
+	if ($bps_search_form != true)  return $html;
 
 	switch ($field->type)
 	{

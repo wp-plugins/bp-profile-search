@@ -1,8 +1,8 @@
 === BP Profile Search ===
 Tags: buddypress, profile, profiles, search, filter
 Requires at least: 3.0
-Tested up to: 3.0.4
-Stable tag: 2.3
+Tested up to: 3.0.5
+Stable tag: 2.4
 
 Adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
 
@@ -26,6 +26,8 @@ BP Profile Search shows your visitors a form to search or filter your Members di
 
 In both modes the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character, are available to your visitors to better specify their search.
 
+* select the members list to filter, if your Members Directory page contains more than one.
+
 == Installation ==
 
 After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin admin page *BuddyPress -> Profile Search*.
@@ -44,10 +46,13 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 
 == Troubleshooting ==
 
-* If any search always returns the full members list, and the search results appear in a widget instead, remove that widget from the Members page.
+* If your search always returns the full members list, try changing the *Filtered Members List* value in the *Advanced Options* tab.
 
 == Changelog ==
 
+= 2.4 =
+* Changed the file names to allow activation in some installations
+* Added the *Filtered Members List* option in the *Advanced Options* tab
 = 2.3 =
 * Added the choice between partial match and exact match for text searches
 * Added a workaround so renaming the plugin folder is no longer required
