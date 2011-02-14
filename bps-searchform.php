@@ -1,23 +1,24 @@
 <?php
 
-add_action ('bp_profile_search_form', 'ps_form');
-function ps_form ()
+add_action ('bp_profile_search_form', 'bps_form');
+function bps_form ()
 {
 	global $bp;
 	global $field;
-	global $ps_options;
-	global $ps_search_form;
+	global $bps_options;
+	global $bps_search_form;
+	global $bps_list;
 
-	$ps_search_form = true;
+	$bps_search_form = true;
 ?>
 
 <form action="" method="post" id="profile-edit-form" class="standard-form">
 
 <div class="item-list-tabs">
 	<ul>
-	<li><?php echo $ps_options['header']; ?><p></p></li>
-<?php if (in_array ('Enabled', (array)$ps_options['show'])) { ?>
-	<li class="last filter"><?php echo $ps_options['message']; ?>&nbsp;<input id="bps_Show" type="checkbox" onclick="javascript:bps_toggleForm()" /></li>
+	<li><?php echo $bps_options['header']; ?><p></p></li>
+<?php if (in_array ('Enabled', (array)$bps_options['show'])) { ?>
+	<li class="last filter"><?php echo $bps_options['message']; ?>&nbsp;<input id="bps_Show" type="checkbox" onclick="javascript:bps_toggleForm()" /></li>
 <?php } ?>
 	</ul>
 </div>
@@ -31,7 +32,7 @@ function ps_form ()
 		while (bp_profile_fields ()):
 			bp_the_profile_field ();
 
-			if (bp_get_the_profile_field_id () == $ps_options['agerange']):
+			if (bp_get_the_profile_field_id () == $bps_options['agerange']):
 				$from = ($_POST["field_{$field->id}"] == '' && $_POST["field_{$field->id}_to"] == '')? $from = '': (int)$_POST["field_{$field->id}"];
 				$to = ($_POST["field_{$field->id}_to"] == '')? $to = $from: (int)$_POST["field_{$field->id}_to"];
 				if ($to < $from)  $to = $from;
@@ -39,15 +40,15 @@ function ps_form ()
 				$_POST["field_{$field->id}_to"] = $to;
 ?>				
 			<div <?php bp_field_css_class ('editfield'); ?>>
-				<label for="<?php bp_the_profile_field_input_name(); ?>"><?php echo $ps_options['agelabel']; ?></label>
+				<label for="<?php bp_the_profile_field_input_name(); ?>"><?php echo $bps_options['agelabel']; ?></label>
 				<input style="width: 10%;" type="text" name="<?php bp_the_profile_field_input_name(); ?>" value="<?php echo $from; ?>" />
 				&nbsp;-&nbsp;
 				<input style="width: 10%;" type="text" name="<?php bp_the_profile_field_input_name(); ?>_to" value="<?php echo $to; ?>" />
-				<p class="description"><?php echo $ps_options['agedesc']; ?></p>
+				<p class="description"><?php echo $bps_options['agedesc']; ?></p>
 			</div>
 <?php		endif;
 
-			if (!in_array (bp_get_the_profile_field_id (), (array)$ps_options['fields']))  continue;
+			if (!in_array (bp_get_the_profile_field_id (), (array)$bps_options['fields']))  continue;
 
 				if ($group_empty == true)
 				{
@@ -137,7 +138,7 @@ function ps_form ()
 
 </form>
 
-<?php if (in_array ('Enabled', (array)$ps_options['show'])) { ?>
+<?php if (in_array ('Enabled', (array)$bps_options['show'])) { ?>
 <script type="text/javascript">
 	function bps_toggleForm () {
 		if (jQuery('#bps_Show').is(':checked'))
@@ -154,6 +155,8 @@ function ps_form ()
 
 </div>
 <?php
-	if ($_POST['bp_profile_search'] == true)  $_REQUEST['num'] = 9999;
+
+	if ($_POST['bp_profile_search'] == true)
+		if ($bps_list+1 == $bps_options['filtered'])  $_REQUEST['num'] = 9999;
 }
 ?>
