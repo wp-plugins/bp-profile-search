@@ -8,7 +8,7 @@ function bps_fields ($name, $values)
 
 	if (bp_is_active ('xprofile')) : 
 	if (function_exists ('bp_has_profile')) : 
-		if (bp_has_profile ()) :
+		if (bp_has_profile ('hide_empty_fields=0')) :
 			$dateboxes = array ();
 			$dateboxes[0] = '';
 
@@ -90,7 +90,7 @@ function bps_search ($results, $params)
 	$userids = bps_conv ($found, 'user_id');
 	$emptyform = true;
 
-	if (bp_has_profile ()):
+	if (bp_has_profile ('hide_empty_fields=0')):
 		while (bp_profile_groups ()):
 			bp_the_profile_group ();
 			while (bp_profile_fields ()): 

@@ -25,7 +25,7 @@ function bps_form ()
 
 <div id="bps_Form">
 <?php
-	if (bp_has_profile ()): while (bp_profile_groups ()):
+	if (bp_has_profile ('hide_empty_fields=0')): while (bp_profile_groups ()):
 		bp_the_profile_group ();
 
 		$group_empty = true;
