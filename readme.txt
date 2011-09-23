@@ -1,8 +1,8 @@
 === BP Profile Search ===
 Tags: buddypress, profile, profiles, search, filter
-Requires at least: 3.0
-Tested up to: 3.2.1
-Stable tag: 2.6
+Requires at least: WP 3.0 / BP 1.2.8
+Tested up to: WP 3.2.1 / BP 1.5
+Stable tag: 2.7
 
 Adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
 
@@ -34,7 +34,7 @@ After the standard manual or automatic plugin installation procedure, you'll be 
 
 Before you can use the plugin, you have to add the profile search form to your BuddyPress Members page.
 
-If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line (line 14):
+If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line:
 
 `</div><!-- #members-dir-search -->`
 
@@ -50,6 +50,9 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 
 == Changelog ==
 
+= 2.7 =
+* Updated for BuddyPress 1.5 multisite
+* Removed compatibility with BP 1.2.7
 = 2.6 =
 * Updated for BuddyPress 1.5
 = 2.5 =
