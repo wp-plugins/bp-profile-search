@@ -1,8 +1,9 @@
 === BP Profile Search ===
-Tags: buddypress, profile, profiles, search, filter
-Requires at least: WP 3.0 / BP 1.2.8
-Tested up to: WP 3.2.1 / BP 1.5
-Stable tag: 2.7
+Contributors: dontdream
+Tags: buddypress, member, members, user, users, profile, profiles, search, filter
+Requires at least: WP 3.0 - BP 1.5
+Tested up to: WP 3.3.1 - BP 1.5.4
+Stable tag: 2.8
 
 Adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
 
@@ -50,9 +51,13 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 
 == Changelog ==
 
+= 2.8 =
+* Fixed the Age Range Search feature
+* Fixed the search form for required fields
+* Requires BuddyPress 1.5 or higher
 = 2.7 =
 * Updated for BuddyPress 1.5 multisite
-* Removed compatibility with BP 1.2.7
+* Requires BuddyPress 1.2.8 or higher
 = 2.6 =
 * Updated for BuddyPress 1.5
 = 2.5 =
@@ -64,7 +69,7 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 * Added the choice between partial match and exact match for text searches
 * Added a workaround so renaming the plugin folder is no longer required
 = 2.2 =
-* Added the Age Range Search option
+* Added the Age Range Search feature
 = 2.1 =
 * Added the option to show/hide the search form
 * Fixed a bug where no results were found in some installations

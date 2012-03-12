@@ -130,17 +130,17 @@ function bps_search ($results, $params)
 					break;
 
 				case 'datebox':
-					if ($id != $bps_options['agerange'])  continue;
-					
+					if ($id != $bps_options['agerange']) continue;
+
 					$time = time ();
 					$day = date ("j", $time);
 					$month = date ("n", $time);
 					$year = date ("Y", $time);
-					$min = mktime (0, 0, 0, $month, $day+1, $year-$to-1);	
-					$max = mktime (0, 0, 0, $month, $day, $year-$value);
+					$ymin = $year - $to - 1;
+					$ymax = $year - $value;
 
 					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					$sql .= " WHERE field_id = $id AND value BETWEEN $min AND $max";
+					$sql .= " WHERE field_id = $id AND value > '$ymin-$month-$day' AND value <= '$ymax-$month-$day'";
 					break;
 				}
 
@@ -173,67 +173,5 @@ function bps_conv ($objects, $field)
 		$array[] = $object->$field;
 
 	return $array;	
-}
-
-add_filter ('bp_get_the_profile_field_options_select', 'bps_field_options', 99, 2);
-add_filter ('bp_get_the_profile_field_options_radio', 'bps_field_options', 99, 2);
-add_filter ('bp_get_the_profile_field_options_checkbox', 'bps_field_options', 99, 2);
-
-function bps_field_options ($html, $option)
-{
-	global $field;
-	global $bps_search_form;
-	
-	if ($bps_search_form != true)  return $html;
-
-	switch ($field->type)
-	{
-	case 'textbox':
-	case 'textarea':
-	case 'datebox':
-		break;
-
-	case 'selectbox':
-		if ($option->name == $_POST["field_$field->id"])
-			$selected = ' selected="selected"';
-		else
-			$selected = '';
-
-		$html = '<option'. $selected. ' value="'. esc_attr ($option->name). '">'.
-				esc_attr ($option->name). '</option>';
-		break;
-
-	case 'radio':
-		if ($option->name == $_POST["field_$field->id"])
-			$selected = ' checked="checked"';
-		else
-			$selected = '';
-
-		$html = '<label><input'. $selected. ' type="radio" name="field_'. $field->id. '" value="'.
-				esc_attr ($option->name). '"> '. esc_attr ($option->name). '</label>';
-		break;
-
-	case 'multiselectbox':
-		if (is_array ($_POST["field_$field->id"]) && in_array ($option->name, $_POST["field_$field->id"]))
-			$selected = ' selected="selected"';
-		else
-			$selected = '';
-
-		$html = '<option'. $selected. ' value="'. esc_attr ($option->name). '">'.
-				esc_attr ($option->name). '</option>';
-		break;
-
-	case 'checkbox':
-		if (is_array ($_POST["field_$field->id"]) && in_array ($option->name, $_POST["field_$field->id"]))
-			$selected = ' checked="checked"';
-		else
-			$selected = '';
-
-		$html = '<label><input'. $selected. ' type="checkbox" name="field_'. $field->id. '[]" value="'.
-				esc_attr ($option->name). '"> '. esc_attr ($option->name). '</label>';
-		break;
-	}
-
-	return $html;
 }
 ?>
