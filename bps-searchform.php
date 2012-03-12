@@ -25,14 +25,17 @@ function bps_form ()
 
 <div id="bps_Form">
 <?php
-	if (bp_has_profile ('hide_empty_fields=0')): while (bp_profile_groups ()):
+	if (bp_has_profile ('hide_empty_fields=0'))  while (bp_profile_groups ())
+	{
 		bp_the_profile_group ();
 
 		$group_empty = true;
-		while (bp_profile_fields ()):
+		while (bp_profile_fields ())
+		{
 			bp_the_profile_field ();
 
-			if (bp_get_the_profile_field_id () == $bps_options['agerange']):
+			if (bp_get_the_profile_field_id () == $bps_options['agerange'])
+			{
 				$from = ($_POST["field_{$field->id}"] == '' && $_POST["field_{$field->id}_to"] == '')? $from = '': (int)$_POST["field_{$field->id}"];
 				$to = ($_POST["field_{$field->id}_to"] == '')? $to = $from: (int)$_POST["field_{$field->id}_to"];
 				if ($to < $from)  $to = $from;
@@ -46,88 +49,123 @@ function bps_form ()
 				<input style="width: 10%;" type="text" name="<?php bp_the_profile_field_input_name(); ?>_to" value="<?php echo $to; ?>" />
 				<p class="description"><?php echo $bps_options['agedesc']; ?></p>
 			</div>
-<?php		endif;
+<?php		}
 
 			if (!in_array (bp_get_the_profile_field_id (), (array)$bps_options['fields']))  continue;
 
-				if ($group_empty == true)
+			if ($group_empty == true)
+			{
+				echo '<h5>'. bp_get_the_profile_group_name (). ':</h5>';
+				$group_empty = false;
+			}
+
+			echo '<div '. bp_get_field_css_class ('editfield'). '>';
+
+			$field_input_name = 'field_'. $field->id;
+			$posted = $_POST[$field_input_name];
+
+			if (!method_exists ($field, 'get_children'))
+				$field = new BP_XProfile_Field ($field->id);
+
+			$options = $field->get_children ();
+
+			switch (bp_get_the_profile_field_type ())
+			{
+			case 'textbox':
+				echo "
+<label for='$field_input_name'>$field->name</label>
+<input type='text' name='$field_input_name' id='$field_input_name' value='$posted' />
+";
+				break;
+
+			case 'textarea':
+				echo "
+<label for='$field_input_name'>$field->name</label>
+<textarea rows='5' cols='40' name='$field_input_name' id='$field_input_name'>$posted</textarea>
+";
+				break;
+
+			case 'selectbox':
+				echo "
+<label for='$field_input_name'>$field->name</label>
+<select name='$field_input_name' id='$field_input_name'>
+<option value=''></option>
+";
+				foreach ($options as $option)
 				{
-					echo '<h5>'. bp_get_the_profile_group_name (). ':</h5>';
-					$group_empty = false;
+					$selected = ($option->name == $posted)? "selected='selected'": "";
+					echo "
+<option $selected value='$option->name'>$option->name</option>
+";
 				}
-?>
-			<div <?php bp_field_css_class ('editfield'); ?>>
+				echo "
+</select>
+";
+				break;
 
-<?php			switch (bp_get_the_profile_field_type())
+			case 'multiselectbox':
+				echo "
+<label for='$field_input_name'>$field->name</label>
+<select name='{$field_input_name}[]' id='$field_input_name' multiple='multiple'>
+";
+				foreach ($options as $option)
 				{
-				case 'textbox':
-?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
-					<input type="text" name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>" value="<?php bp_the_profile_field_edit_value(); ?>" />
-<?php				break;
-
-				case 'textarea':
-?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
-					<textarea rows="5" cols="40" name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_edit_value(); ?></textarea>
-<?php				break;
-
-				case 'selectbox':
-?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
-					<select name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>">
-						<?php bp_the_profile_field_options(); ?>
-					</select>
-<?php				break;
-
-				case 'multiselectbox':
-?>					<label for="<?php bp_the_profile_field_input_name(); ?>"><?php bp_the_profile_field_name(); ?></label>
-					<select name="<?php bp_the_profile_field_input_name(); ?>" id="<?php bp_the_profile_field_input_name(); ?>" multiple="multiple">
-						<?php bp_the_profile_field_options(); ?>
-					</select>
-					<?php if (!bp_get_the_profile_field_is_required()): ?>
-						<a class="clear-value" href="javascript:clear('<?php bp_the_profile_field_input_name(); ?>');"><?php _e('Clear', 'buddypress'); ?></a>
-					<?php endif; ?>
-<?php				break;
-
-				case 'radio':
-?>					<div class="radio">
-						<span class="label"><?php bp_the_profile_field_name(); ?></span>
-						<?php bp_the_profile_field_options(); ?>
-						<?php if (!bp_get_the_profile_field_is_required()): ?>
-							<a class="clear-value" href="javascript:clear('<?php bp_the_profile_field_input_name(); ?>');"><?php _e('Clear', 'buddypress'); ?></a>
-						<?php endif; ?>
-					</div>
-<?php				break;
-
-				case 'checkbox':
-?>					<div class="checkbox">
-						<span class="label"><?php bp_the_profile_field_name(); ?></span>
-						<?php bp_the_profile_field_options(); ?>
-					</div>
-<?php				break;
-
-				case 'datebox':
-?>					<div class="datebox">
-						<label for="<?php bp_the_profile_field_input_name(); ?>_day"><?php bp_the_profile_field_name(); ?></label>
-						<select name="<?php bp_the_profile_field_input_name(); ?>_day" id="<?php bp_the_profile_field_input_name(); ?>_day">
-							<?php bp_the_profile_field_options('type=day'); ?>
-						</select>
-						<select name="<?php bp_the_profile_field_input_name(); ?>_month" id="<?php bp_the_profile_field_input_name(); ?>_month">
-							<?php bp_the_profile_field_options('type=month'); ?>
-						</select>
-						<select name="<?php bp_the_profile_field_input_name(); ?>_year" id="<?php bp_the_profile_field_input_name(); ?>_year">
-							<?php bp_the_profile_field_options('type=year'); ?>
-						</select>
-					</div>
-<?php				break;
+					$selected = (in_array ($option->name, (array)$posted))? "selected='selected'": "";
+					echo "
+<option $selected value='$option->name'>$option->name</option>
+";
 				}
-?>
-				<p class="description"><?php bp_the_profile_field_description(); ?></p>
-			</div>
+				echo "
+</select>
+";
+				break;
 
-<?php 	endwhile;
+			case 'radio':
+				echo "
+<div class='radio'>
+<span class='label'>$field->name</span>
+<div id='$field_input_name'>
+";
+				foreach ($options as $option)
+				{
+					$selected = ($option->name == $posted)? "checked='checked'": "";
+					echo "
+<label><input $selected type='radio' name='$field_input_name' value='$option->name'>$option->name</label>
+";
+				}
+				echo "
+</div>
+<a class='clear-value' 
+href='javascript:clear(\"$field_input_name\");'>". __('Clear', 'buddypress'). "</a>
+</div>
+";
+				break;
+
+			case 'checkbox':
+				echo "
+<div class='checkbox'>
+<span class='label'>$field->name</span>
+";
+				foreach ($options as $option)
+				{
+					$selected = (in_array ($option->name, (array)$posted))? "checked='checked'": "";
+					echo "
+<label><input $selected type='checkbox' name='{$field_input_name}[]' value='$option->name'>$option->name</label>
+";
+				}
+				echo "
+</div>
+";
+				break;
+			}
+
+			echo '</div>';
+		}
+
 		if ($group_empty == false)  echo '<br />';
-
-	endwhile; endif;
+	}
 ?>
+
 	<div class="submit">
 		<input type="submit" name="members_search_submit" id="members_search_submit" value="<?php _e('Search', 'buddypress'); ?>" />
 		<?php echo '<a href="'. $bp->root_domain. '/'. BP_MEMBERS_SLUG. '/">'. __('Clear Form', 'buddypress'). '</a>'; ?>
