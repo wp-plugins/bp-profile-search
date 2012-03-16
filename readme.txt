@@ -54,6 +54,7 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 = 2.8 =
 * Fixed the Age Range Search feature
 * Fixed the search form for required fields
+* Removed field descriptions from the search form
 * Requires BuddyPress 1.5 or higher
 = 2.7 =
 * Updated for BuddyPress 1.5 multisite
