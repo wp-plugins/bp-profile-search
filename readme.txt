@@ -19,7 +19,7 @@ BP Profile Search shows your visitors a form to filter your Members directory. I
 
 * enable the toggle form feature;
 
-* select the profile fields to include in the search form (currently the *datebox* profile fields are not supported);
+* select the profile fields to include in the search form (the *datebox* profile fields are not supported);
 
 * if your extended profiles include a birth date field, enable the Age Range search, so your visitors can specify the minimum and maximum age for their search;
 
