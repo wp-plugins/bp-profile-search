@@ -2,22 +2,22 @@
 Contributors: dontdream
 Tags: buddypress, member, members, user, users, profile, profiles, search, filter
 Requires at least: WP 3.0 - BP 1.5
-Tested up to: WP 3.3.1 - BP 1.5.4
-Stable tag: 2.8
+Tested up to: WP 3.3.1 - BP 1.5.5
+Stable tag: 3.0
 
-Adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
+Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
 
 == Description ==
 
-BP Profile Search adds a configurable search form to your BuddyPress Members directory, so visitors can find site members searching their extended profiles.
+BP Profile Search adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles. The search form can be inserted in a post or page, using the shortcode *[bp_profile_search_form]*, or in a sidebar or widget area, using the widget *BP Profile Search*, or in your template files, e.g. in your Members Directory page, using the code *&lt;?php do_action ('bp_profile_search_form'); ?&gt;*
 
 Features:
 
-BP Profile Search shows your visitors a form to search or filter your Members directory. In the plugin admin page you can access the following options:
+BP Profile Search shows your visitors a form to filter your Members directory. In the plugin admin page you have the following options:
 
 * specify the text for the form header or welcome message (HTML enabled);
 
-* enable the show/hide form feature;
+* enable the toggle form feature;
 
 * select the profile fields to include in the search form (currently the *datebox* profile fields are not supported);
 
@@ -33,9 +33,9 @@ In both modes the wildcard characters *% (percent sign)*, matching zero or more 
 
 After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin admin page *BuddyPress -> Profile Search*.
 
-Before you can use the plugin, you have to add the profile search form to your BuddyPress Members page.
+Before you can use the plugin, you have to add the profile search form to your BuddyPress site. The search form can be inserted in a post or page, using the shortcode *[bp_profile_search_form]*, or in a sidebar or widget area, using the widget *BP Profile Search*, or in your template files, e.g. in your Members Directory page, using the code *&lt;?php do_action ('bp_profile_search_form'); ?&gt;*
 
-If you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line:
+If you wish to add the search form to your Members Directory page, and you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line:
 
 `</div><!-- #members-dir-search -->`
 
@@ -43,7 +43,7 @@ and, right after that, insert the BP Profile Search form:
 
 `<?php do_action ('bp_profile_search_form'); ?>`
 
-If you are *not* using the BuddyPress default theme, you have to insert the BP Profile Search form somewhere in your theme Members page.
+If you are *not* using the BuddyPress default theme, the procedure might be different.
 
 == Troubleshooting ==
 
@@ -51,6 +51,9 @@ If you are *not* using the BuddyPress default theme, you have to insert the BP P
 
 == Changelog ==
 
+= 3.0 =
+* Added the BP Profile Search widget
+* Added the [bp_profile_search_form] shortcode
 = 2.8 =
 * Fixed the Age Range Search feature
 * Fixed the search form for required fields

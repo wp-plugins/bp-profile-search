@@ -3,7 +3,7 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.blogsweek.com/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 2.8
+Version: 3.0
 Author: Andrea Tarantini
 Author URI: http://www.blogsweek.com/
 */
@@ -38,13 +38,13 @@ function bps_set_default_options ()
 {
 	global $bps_options;
 
-	$bps_options['header'] = '<h4>Profile Search</h4><p>You can find site members searching their public profiles. Search by any or all of the fields below:</p>';
+	$bps_options['header'] = '<h4>Advanced Search</h4>';
 	$bps_options['show'] = array ('Enabled');
-	$bps_options['message'] = 'Show Search Form';
+	$bps_options['message'] = 'Toggle Form';
 	$bps_options['fields'] = array ();
 	$bps_options['agerange'] = 0;
 	$bps_options['agelabel'] = 'Age Range';
-	$bps_options['agedesc'] = 'enter the minimum and maximum age for your search';
+	$bps_options['agedesc'] = 'minimum and maximum age';
 	$bps_options['searchmode'] = 'Partial Match';
 	$bps_options['filtered'] = 1;
 
@@ -106,16 +106,23 @@ function bps_admin_main ()
 	
 	<h3>Form Header and Fields</h3>
 
-	<p>Select the header text and the profile fields to include in your profile search form.<br/>To display the form in your Members Directory page, insert in that page the following line:<br/><br/><strong>&lt;?php do_action ('bp_profile_search_form'); ?&gt;</strong><br/><br/>See <em>readme.txt</em> for more detailed instructions.</p>	
+	<p>Select the header text and the profile fields to include in your search form.</p>
+	<p>After you configure your form, you can display it:
+	<ul>
+	<li>a) In a post or page, using the shortcode <strong>[bp_profile_search_form]</strong></li>
+	<li>b) In a sidebar or widget area, using the <em>BP Profile Search</em> widget</li>
+	<li>c) In your template files, e.g. in your Members Directory page, using the code <strong>&lt;?php do_action ('bp_profile_search_form'); ?&gt;</strong></li>
+	</ul>
+	Please note that the Form Header and the Toggle Form feature apply to case c) only.<br/>See <em>readme.txt</em> for more detailed instructions.</p>	
 
 	<table class="form-table">
 	<tr valign="top"><th scope="row">Search Form Header:</th><td>
 		<textarea name="bps_options[header]" class="large-text code" rows="4"><?php echo $bps_options['header']; ?></textarea>
 	</td></tr>
-	<tr valign="top"><th scope="row">Show/Hide Form:</th><td>
+	<tr valign="top"><th scope="row">Toggle Form:</th><td>
 		<label><input type="checkbox" name="bps_options[show][]" value="Enabled"<?php if (in_array ('Enabled', (array)$bps_options['show'])) echo ' checked="checked"'; ?> /> Enabled</label><br />
 	</td></tr>
-	<tr valign="top"><th scope="row">Show Form Message:</th><td>
+	<tr valign="top"><th scope="row">Toggle Form Message:</th><td>
 		<input type="text" name="bps_options[message]" value="<?php echo $bps_options['message']; ?>"  />
 	</td></tr>
 	<tr valign="top"><th scope="row">Selected Profile Fields:</th><td>
