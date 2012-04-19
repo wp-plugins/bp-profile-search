@@ -85,9 +85,6 @@ function bps_search ($results, $params)
 	$noresults['users'] = array ();
 	$noresults['total'] = 0;
 
-	$sql = "SELECT DISTINCT user_id from {$bp->profile->table_name_data}";
-	$found = $wpdb->get_results ($sql);
-	$userids = bps_conv ($found, 'user_id');
 	$emptyform = true;
 
 	if (bp_has_profile ('hide_empty_fields=0')):
@@ -145,7 +142,10 @@ function bps_search ($results, $params)
 				}
 
 				$found = $wpdb->get_results ($sql);
-				$userids = array_intersect ($userids, bps_conv ($found, 'user_id'));
+				if (!is_array ($userids)) 
+					$userids = bps_conv ($found, 'user_id');
+				else
+					$userids = array_intersect ($userids, bps_conv ($found, 'user_id'));
 
 				if (count ($userids) == 0)  return $noresults;
 				$emptyform = false;
@@ -173,5 +173,58 @@ function bps_conv ($objects, $field)
 		$array[] = $object->$field;
 
 	return $array;	
+}
+
+add_shortcode ('bp_profile_search_form', 'bps_shortcode');
+function bps_shortcode ($attr, $content)
+{
+	ob_start ();
+	bps_form ('bps_shortcode');
+	return ob_get_clean ();
+}
+
+class bps_widget extends WP_Widget
+{
+	function bps_widget ()
+	{
+		$widget_ops = array ('description' => 'Your BP Profile Search form');
+		$this->WP_Widget ('bp_profile_search', 'BP Profile Search', $widget_ops);
+	}
+
+	function widget ($args, $instance)
+	{
+		extract ($args);
+		$title = apply_filters ('widget_title', esc_attr ($instance['title']));
+	
+		echo $before_widget;
+		if ($title)
+			echo $before_title. $title. $after_title;
+		bps_form ('bps_widget');
+		echo $after_widget;
+	}
+
+	function update ($new_instance, $old_instance)
+	{
+		$instance = $old_instance;
+		$instance['title'] = strip_tags ($new_instance['title']);
+		return $instance;
+	}
+
+	function form ($instance)
+	{
+		$title = strip_tags ($instance['title']);
+	?>
+		<p>
+		<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e ('Title:', 'wpm'); ?></label>
+		<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
+		</p>
+	<?php
+	}
+}
+
+add_action ('widgets_init', 'bps_widget_init');
+function bps_widget_init ()
+{
+	register_widget ('bps_widget');
 }
 ?>
