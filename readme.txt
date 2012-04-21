@@ -19,7 +19,7 @@ In all three cases when visitors click 'Search', they are served your Members Di
 
 After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin admin page *BuddyPress -> Profile Search*.
 
-Configuration
+= Configuration =
 
 In the plugin admin page you have the following options:
 
@@ -37,7 +37,7 @@ In the plugin admin page you have the following options:
 
 In both search modes the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character, are available to your visitors to better specify their search.
 
-Displaying the search form
+= Displaying the search form =
 
 There are three different ways to integrate your BP Profile Search form in your BuddyPress site. You can insert the form:
 
@@ -45,9 +45,12 @@ There are three different ways to integrate your BP Profile Search form in your 
 
 * In a sidebar or widget area, using the ***BP Profile Search*** widget
 
-* In your template files, e.g. in your Members Directory page, using the code <br>**&lt;?php do_action (‘bp_profile_search_form’); ?&gt;**
+* In your template files, e.g. in your Members Directory page, using the code  
+**&lt;?php do_action ('bp_profile_search_form'); ?&gt;**
 
-Shortcodes and widgets are standard WordPress features, so I won’t explain their usage here. Adding the search form in your template files is also very simple, as shown in the following example.
+Shortcodes and widgets are standard WordPress features, so I won't explain their usage here. Adding the search form in your template files is also very simple, as shown in the following example.
+
+= Example =
 
 If you wish to add the search form to your Members Directory page, and you are using the BuddyPress default theme, open *index.php* in the *buddypress/bp-themes/bp-default/members* folder, locate this line:
 
