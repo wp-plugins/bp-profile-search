@@ -3,7 +3,7 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.blogsweek.com/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 3.0
+Version: 3.1
 Author: Andrea Tarantini
 Author URI: http://www.blogsweek.com/
 */
