@@ -122,7 +122,7 @@ function bps_search ($results, $params)
 					$sql .= " WHERE field_id = $id";
 					$like = array ();
 					foreach ($value as $curvalue)
-						$like[] = "value LIKE '%\"$curvalue\"%'";
+						$like[] = "value = '$curvalue' OR value LIKE '%\"$curvalue\"%'";
 					$sql .= ' AND ('. implode (' OR ', $like). ')';	
 					break;
 

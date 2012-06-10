@@ -89,6 +89,7 @@ echo "<option value=''></option>";
 
 			foreach ($options as $option)
 			{
+				$option->name = trim ($option->name);
 				$selected = ($option->name == $posted)? "selected='selected'": "";
 echo "<option $selected value='$option->name'>$option->name</option>";
 			}
@@ -101,6 +102,7 @@ echo "<select name='{$fname}[]' id='$fname' multiple='multiple'>";
 
 			foreach ($options as $option)
 			{
+				$option->name = trim ($option->name);
 				$selected = (in_array ($option->name, (array)$posted))? "selected='selected'": "";
 echo "<option $selected value='$option->name'>$option->name</option>";
 			}
@@ -114,6 +116,7 @@ echo "<div id='$fname'>";
 
 			foreach ($options as $option)
 			{
+				$option->name = trim ($option->name);
 				$selected = ($option->name == $posted)? "checked='checked'": "";
 echo "<label><input $selected type='radio' name='$fname' value='$option->name'>$option->name</label>";
 			}
@@ -128,6 +131,7 @@ echo "<span class='label'>$field->name</span>";
 
 			foreach ($options as $option)
 			{
+				$option->name = trim ($option->name);
 				$selected = (in_array ($option->name, (array)$posted))? "checked='checked'": "";
 echo "<label><input $selected type='checkbox' name='{$fname}[]' value='$option->name'>$option->name</label>";
 			}
