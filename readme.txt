@@ -1,9 +1,9 @@
 === BP Profile Search ===
 Contributors: dontdream
 Tags: buddypress, member, members, user, users, profile, profiles, search, filter
-Requires at least: WP 3.0 - BP 1.5
-Tested up to: WP 3.3.2 - BP 1.5.5
-Stable tag: 3.1
+Requires at least: BP 1.6
+Tested up to: BP 1.6.1
+Stable tag: 3.2
 
 Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
 
@@ -17,7 +17,7 @@ In all three cases when visitors click 'Search', they are served your Members Di
 
 == Installation ==
 
-After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin admin page *BuddyPress -> Profile Search*.
+After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin settings page *Users -> Profile Search*.
 
 = Configuration =
 
@@ -68,6 +68,9 @@ If your searches always return the full members list, try changing the *Filtered
 
 == Changelog ==
 
+= 3.2 =
+* Updated for BuddyPress 1.6
+* Requires BuddyPress 1.6 or higher
 = 3.1 =
 * Fixed the search when field options contain trailing spaces
 * Fixed the search when field type is changed after creation
