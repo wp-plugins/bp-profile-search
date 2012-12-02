@@ -13,7 +13,7 @@ BP Profile Search adds a configurable search form to your BuddyPress site, so vi
 
 You can insert the search form in a post or page, or in a sidebar or widget area, or anywhere in your theme, e.g. in your Members Directory template file.
 
-In all three cases when visitors click 'Search', they are served your Members Directory page showing their search results.
+In all three cases when visitors click the 'Search' button, they are served your Members Directory page showing their search results.
 
 == Installation ==
 
@@ -64,7 +64,7 @@ If you are *not* using the BuddyPress default theme, the procedure might be diff
 
 == Troubleshooting ==
 
-If your searches always return the full members list, try changing the *Filtered Members List* value in *BuddyPress -> Profile Search*, *Advanced Options* tab.
+If your searches always return the full members list, try changing the *Filtered Members List* value in *Users -> Profile Search*, *Advanced Options* tab.
 
 == Changelog ==
 
