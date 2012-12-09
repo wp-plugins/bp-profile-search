@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: BP Profile Search
-Plugin URI: http://www.blogsweek.com/bp-profile-search/
+Plugin URI: http://www.dontdream.it/bp-profile-search
 Description: Search BuddyPress extended profiles.
 Version: 3.2
 Author: Andrea Tarantini
-Author URI: http://www.blogsweek.com/
+Author URI: http://www.dontdream.it/
 */
 
 include 'bps-functions.php';
