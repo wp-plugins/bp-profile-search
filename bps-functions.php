@@ -69,23 +69,37 @@ function bps_agerange ($name, $value)
 	return true;
 }
 
-add_filter ('bp_core_get_users', 'bps_search', 99, 2);
-function bps_search ($results, $params)
+add_action ('wp_loaded', 'bps_cookies');
+function bps_cookies ()
+{
+	global $bps_results;
+
+	if (isset ($_POST['bp_profile_search']))
+	{
+		$bps_results = bps_search ($_POST);
+		add_action ('bp_before_directory_members_content', 'bps_your_search');
+		setcookie ('bp-profile-search', serialize ($_POST), 0, COOKIEPATH);
+	}
+	else if (isset ($_COOKIE['bp-profile-search']))
+	{
+		if (defined ('DOING_AJAX'))
+			$bps_results = bps_search (unserialize (stripslashes ($_COOKIE['bp-profile-search'])));
+		else
+		{
+			remove_action ('bp_before_directory_members_content', 'bps_your_search');
+			setcookie ('bp-profile-search', '', 0, COOKIEPATH);
+		}
+	}
+}
+
+function bps_search ($posted)
 {
 	global $bp;
 	global $wpdb;
-	global $bps_list;
 	global $bps_options;
 
-	if ($_POST['bp_profile_search'] != true)  return $results;
-
-	$bps_list += 1;
-	if ($bps_list != $bps_options['filtered'])  return $results;
-
-	$noresults['users'] = array ();
-	$noresults['total'] = 0;
-
 	$emptyform = true;
+	$results = array ('users' => array (0), 'validated' => true);
 
 	if (bp_has_profile ('hide_empty_fields=0')):
 		while (bp_profile_groups ()):
@@ -94,35 +108,41 @@ function bps_search ($results, $params)
 				bp_the_profile_field ();
 
 				$id = bp_get_the_profile_field_id ();
-				$value = $_POST["field_$id"];
-				$to = $_POST["field_{$id}_to"];
+				$value = $posted["field_$id"];
+				$to = $posted["field_{$id}_to"];
 
 				if ($value == '' && $to == '')  continue;
+
+				$sql = "SELECT DISTINCT user_id FROM {$bp->profile->table_name_data}";
 
 				switch (bp_get_the_profile_field_type ())
 				{
 				case 'textbox':
 				case 'textarea':
-					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
+					$value = $posted["field_$id"];
+					$escaped = '%'. like_escape ($wpdb->escape ($posted["field_$id"])). '%';
 					if ($bps_options['searchmode'] == 'Partial Match')
-						$sql .= " WHERE field_id = $id AND value LIKE '%%$value%%'";
+						$sql .= $wpdb->prepare (" WHERE field_id = %d AND value LIKE %s", $id, $escaped);
 					else					
-						$sql .= " WHERE field_id = $id AND value LIKE '$value'";
+						$sql .= $wpdb->prepare (" WHERE field_id = %d AND value = %s", $id, $value);
 					break;
 
 				case 'selectbox':
 				case 'radio':
-					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					$sql .= " WHERE field_id = $id AND value = '$value'";
+					$value = $posted["field_$id"];
+					$sql .= $wpdb->prepare (" WHERE field_id = %d AND value = %s", $id, $value);
 					break;
 
 				case 'multiselectbox':
 				case 'checkbox':
-					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					$sql .= " WHERE field_id = $id";
+					$values = $posted["field_$id"];
+					$sql .= $wpdb->prepare (" WHERE field_id = %d", $id);
 					$like = array ();
-					foreach ($value as $curvalue)
-						$like[] = "value = '$curvalue' OR value LIKE '%\"$curvalue\"%'";
+					foreach ($values as $value)
+					{
+						$escaped = '%"'. like_escape ($wpdb->escape ($value)). '"%';
+						$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
+					}	
 					$sql .= ' AND ('. implode (' OR ', $like). ')';	
 					break;
 
@@ -136,43 +156,65 @@ function bps_search ($results, $params)
 					$ymin = $year - $to - 1;
 					$ymax = $year - $value;
 
-					$sql = "SELECT user_id from {$bp->profile->table_name_data}";
-					$sql .= " WHERE field_id = $id AND value > '$ymin-$month-$day' AND value <= '$ymax-$month-$day'";
+					$sql .= $wpdb->prepare (" WHERE field_id = %d AND DATE(value) > %s AND DATE(value) <= %s", $id, "$ymin-$month-$day", "$ymax-$month-$day");
 					break;
 				}
 
-				$found = $wpdb->get_results ($sql);
-				if (!is_array ($userids)) 
-					$userids = bps_conv ($found, 'user_id');
+				$sql = apply_filters ('bps_field_query', $sql);
+				$found = $wpdb->get_col ($sql);
+				if (!isset ($users)) 
+					$users = $found;
 				else
-					$userids = array_intersect ($userids, bps_conv ($found, 'user_id'));
+					$users = array_intersect ($users, $found);
 
-				if (count ($userids) == 0)  return $noresults;
 				$emptyform = false;
+				if (count ($users) == 0)  return $results;
 
 			endwhile;
 		endwhile;
 	endif;
 
-	if ($emptyform == true)  return $noresults;
+	if ($emptyform == true)
+	{
+		$results['validated'] = false;
+		return $results;
+	}
 
-	remove_filter ('bp_core_get_users', 'bps_search', 99, 2);
-
-	$params['per_page'] = count ($userids);
-	$params['include'] = $wpdb->escape (implode (',', $userids));
-	$results = bp_core_get_users ($params);
-
+	$results['users'] = $users;
 	return $results;
 }
 
-function bps_conv ($objects, $field)
+add_action ('bp_before_members_loop', 'bps_add_filter');
+add_action ('bp_after_members_loop', 'bps_remove_filter');
+function bps_add_filter ()
 {
-	$array = array ();
+	add_filter ('bp_pre_user_query_construct', 'bps_user_query');
+}
+function bps_remove_filter ()
+{
+	remove_filter ('bp_pre_user_query_construct', 'bps_user_query');
+}
 
-	foreach ($objects as $object)
-		$array[] = $object->$field;
+function bps_user_query ($query)
+{
+	global $bps_results;
 
-	return $array;	
+	if (isset ($bps_results) && $bps_results['validated'])
+	{
+		$users = $bps_results['users'];
+
+		if ($query->query_vars['user_id'])
+		{
+			$friends = friends_get_friend_user_ids ($query->query_vars['user_id']);
+
+			$users = array_intersect ($users, $friends);
+			if (count ($users) == 0)  $users = array (0);
+		}
+
+		$query->query_vars['include'] = $users;
+	}
+
+	return $query;
 }
 
 add_shortcode ('bp_profile_search_form', 'bps_shortcode');
@@ -215,7 +257,7 @@ class bps_widget extends WP_Widget
 		$title = strip_tags ($instance['title']);
 	?>
 		<p>
-		<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e ('Title:', 'wpm'); ?></label>
+		<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e ('Title:'); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
 		</p>
 	<?php

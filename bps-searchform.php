@@ -5,9 +5,11 @@ function bps_form ($form_id)
 {
 	global $field;
 	global $bps_options;
+	global $bps_version;
 
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
+echo "\n<!-- BP Profile Search $bps_version -->\n";
 	if ($form_id == '')
 	{
 	$form_id = 'bps_action';
@@ -73,13 +75,15 @@ echo '<div '. bp_get_field_css_class ('editfield'). '>';
 			switch (bp_get_the_profile_field_type ())
 			{
 			case 'textbox':
+			$value = esc_attr (stripslashes ($_POST[$fname]));
 echo "<label for='$fname'>$field->name</label>";
-echo "<input type='text' name='$fname' id='$fname' value='$posted' />";
+echo "<input type='text' name='$fname' id='$fname' value='$value' />";
 			break;
 
 			case 'textarea':
+			$value = esc_attr (stripslashes ($_POST[$fname]));
 echo "<label for='$fname'>$field->name</label>";
-echo "<textarea rows='5' cols='40' name='$fname' id='$fname'>$posted</textarea>";
+echo "<textarea rows='5' cols='40' name='$fname' id='$fname'>$value</textarea>";
 			break;
 
 			case 'selectbox':
@@ -90,8 +94,9 @@ echo "<option value=''></option>";
 			foreach ($options as $option)
 			{
 				$option->name = trim ($option->name);
+				$value = esc_attr (stripslashes ($option->name));
 				$selected = ($option->name == $posted)? "selected='selected'": "";
-echo "<option $selected value='$option->name'>$option->name</option>";
+echo "<option $selected value='$value'>$value</option>";
 			}
 echo "</select>";
 			break;
@@ -103,8 +108,9 @@ echo "<select name='{$fname}[]' id='$fname' multiple='multiple'>";
 			foreach ($options as $option)
 			{
 				$option->name = trim ($option->name);
+				$value = esc_attr (stripslashes ($option->name));
 				$selected = (in_array ($option->name, (array)$posted))? "selected='selected'": "";
-echo "<option $selected value='$option->name'>$option->name</option>";
+echo "<option $selected value='$value'>$value</option>";
 			}
 echo "</select>";
 			break;
@@ -117,8 +123,9 @@ echo "<div id='$fname'>";
 			foreach ($options as $option)
 			{
 				$option->name = trim ($option->name);
+				$value = esc_attr (stripslashes ($option->name));
 				$selected = ($option->name == $posted)? "checked='checked'": "";
-echo "<label><input $selected type='radio' name='$fname' value='$option->name'>$option->name</label>";
+echo "<label><input $selected type='radio' name='$fname' value='$value'>$value</label>";
 			}
 echo '</div>';
 echo "<a class='clear-value' href='javascript:clear(\"$fname\");'>". __('Clear', 'buddypress'). "</a>";
@@ -132,8 +139,9 @@ echo "<span class='label'>$field->name</span>";
 			foreach ($options as $option)
 			{
 				$option->name = trim ($option->name);
+				$value = esc_attr (stripslashes ($option->name));
 				$selected = (in_array ($option->name, (array)$posted))? "checked='checked'": "";
-echo "<label><input $selected type='checkbox' name='{$fname}[]' value='$option->name'>$option->name</label>";
+echo "<label><input $selected type='checkbox' name='{$fname}[]' value='$value'>$value</label>";
 			}
 echo '</div>';
 			break;
@@ -143,11 +151,77 @@ echo '</div>';
 		}
 	}
 
+	if (empty ($bps_options['agerange']) && count ((array)$bps_options['fields']) == 0)
+	{
+		$url = is_multisite ()? network_admin_url ('users.php'): admin_url ('users.php');
+		$settings = add_query_arg (array ('page' => 'bp-profile-search'), $url);
+echo "<p>Please <a href='$settings'>select your form fields</a>.</p>";
+	}
+
 echo "<div class='submit'>";
 echo "<input type='submit' value='". __('Search', 'buddypress'). "' />";
 echo '</div>';
 echo "<input type='hidden' name='bp_profile_search' value='true' />";
-echo "<input type='hidden' name='num' value='9999' />";
 echo '</form>';
+echo "\n<!-- BP Profile Search $bps_version - end -->\n";
+}
+
+function bps_your_search ()
+{
+	global $field;
+	global $bps_options;
+
+	if (isset ($_POST['bp_profile_search']))
+		$posted = $_POST;
+	else if (isset ($_COOKIE['bp-profile-search']))
+		$posted = unserialize (stripslashes ($_COOKIE['bp-profile-search']));
+
+echo '<p>';
+	if (bp_has_profile ('hide_empty_fields=0'))  while (bp_profile_groups ())
+	{
+		bp_the_profile_group ();
+		while (bp_profile_fields ())
+		{ 
+			bp_the_profile_field ();
+			$fname = 'field_'. $field->id;
+
+			$value = $posted[$fname];
+			$value_to = $posted[$fname. '_to'];
+			if ($value == '' && $value_to == '')  continue;
+
+			switch (bp_get_the_profile_field_type ())
+			{
+			case 'textbox':
+			case 'textarea':
+				$value = esc_attr (stripslashes ($posted[$fname]));
+echo "<strong>$field->name:</strong> $value<br/>";
+				break;
+
+			case 'selectbox':
+			case 'radio':
+				$value = stripslashes ($posted[$fname]);
+echo "<strong>$field->name:</strong> $value<br/>";
+				break;
+
+			case 'multiselectbox':
+			case 'checkbox':
+				$values = stripslashes_deep ($posted[$fname]);
+echo "<strong>$field->name:</strong> ". implode ('<strong>,</strong> ', $values). "<br/>";
+				break;
+
+			case 'datebox':
+				if ($field->id != $bps_options['agerange'])  continue;
+
+				$from = (int)$value;
+				$to = ($value_to == '')? $from: (int)$value_to;
+				if ($to < $from)  $to = $from;
+
+echo "<strong>{$bps_options['agelabel']}:</strong> $from <strong>-</strong> $to<br/>";
+				break;
+			}
+		}
+	}
+
+echo '</p>';
 }
 ?>

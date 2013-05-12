@@ -1,19 +1,22 @@
 <?php
 /*
 Plugin Name: BP Profile Search
-Plugin URI: http://www.dontdream.it/bp-profile-search
+Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 3.2
+Version: 3.3
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 */
+
+global $bps_version;
+$bps_version = '3.3';
 
 include 'bps-functions.php';
 
 register_activation_hook (__FILE__, 'bps_activate');
 function bps_activate ()
 {
-	bps_set_default_options ();
+//	bps_set_default_options ();
 	return true;
 }
 
@@ -58,7 +61,6 @@ function bps_set_default_options ()
 	$bps_options['agelabel'] = 'Age Range';
 	$bps_options['agedesc'] = 'minimum and maximum age';
 	$bps_options['searchmode'] = 'Partial Match';
-	$bps_options['filtered'] = 1;
 
 	update_option ('bps_options', $bps_options);
 	return true;
@@ -74,7 +76,7 @@ function bps_admin ()
 
 <div class="wrap">
   
-  <h2><?php echo esc_html ('Profile Search Setup'); ?></h2>
+  <h2>Profile Search Setup</h2>
 
   <ul class="subsubsub">
 <?php
@@ -106,6 +108,8 @@ function bps_admin_main ()
 		bps_set_options (array ('header', 'show', 'message', 'fields', 'agerange', 'agelabel', 'agedesc'));
 		$message = "Settings saved.";
 	}
+
+	$rlink = '<a href="http://dontdream.it/bp-profile-search/">the plugin support page</a>';
 ?>
 
 <?php if ($message) : ?>
@@ -125,7 +129,7 @@ function bps_admin_main ()
 	<li>b) In a sidebar or widget area, using the <em>BP Profile Search</em> widget</li>
 	<li>c) In your template files, e.g. in your Members Directory page, using the code <strong>&lt;?php do_action ('bp_profile_search_form'); ?&gt;</strong></li>
 	</ul>
-	Please note that the Form Header and the Toggle Form feature apply to case c) only.<br/>See <em>readme.txt</em> for more detailed instructions.</p>	
+	Please note that the Form Header and the Toggle Form feature apply to case c) only.<br/>See <?php echo $rlink; ?> for more detailed instructions.</p>	
 
 	<table class="form-table">
 	<tr valign="top"><th scope="row">Search Form Header:</th><td>
@@ -172,7 +176,7 @@ function bps_admin_options ()
 
 	if ($_POST['action'] == 'update')
 	{
-		bps_set_options (array ('searchmode', 'filtered'));
+		bps_set_options (array ('searchmode'));
 		$message = "Settings saved.";
 	}
 ?>
@@ -195,21 +199,6 @@ function bps_admin_options ()
 		<label><input type="radio" name="bps_options[searchmode]" value="Exact Match"<?php if ('Exact Match' == $bps_options['searchmode']) echo ' checked="checked"'; ?> /> Exact Match</label><br />
 	</td></tr>
 	</table>
-	
-	<h3>Filtered Members List</h3>
-
-	<p>BP Profile Search filters the members list in your Members Directory page. Usually there is only one members list in that page, but sometimes widgets or other plugins add more lists, so you have to tell BP Profile Search which is the list to filter. If your searches always return the full members directory, try changing this number here.</p>	
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row">Filtered Members List:</th><td>
-		<select name="bps_options[filtered]">
-		<option value="1"<?php if ('1' == $bps_options['filtered']) echo ' selected="selected"'; ?>>1&nbsp;</option>
-		<option value="2"<?php if ('2' == $bps_options['filtered']) echo ' selected="selected"'; ?>>2&nbsp;</option>
-		<option value="3"<?php if ('3' == $bps_options['filtered']) echo ' selected="selected"'; ?>>3&nbsp;</option>
-		<option value="4"<?php if ('4' == $bps_options['filtered']) echo ' selected="selected"'; ?>>4&nbsp;</option>
-		</select>
-	</td></tr>
-	</table>
 
 	<p class="submit">
 	  <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
@@ -227,20 +216,5 @@ function bps_set_options ($vars)
 		$bps_options[$var] = stripslashes_deep ($_POST['bps_options'][$var]);
 
 	update_option ('bps_options', $bps_options);
-}
-
-function bps_get_vars ($vars)
-{
-	foreach ($vars as $var)
-	{
-		global $$var;
-
-		if (empty ($_POST["$var"]))
-			$$var = empty ($_GET["$var"])? '': $_GET["$var"];
-		else
-			$$var = $_POST["$var"];
-		
-		$$var = stripslashes_deep ($$var);
-	}
 }
 ?>
