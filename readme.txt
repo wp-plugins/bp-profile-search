@@ -2,8 +2,8 @@
 Contributors: dontdream
 Tags: buddypress, member, members, friend, friends, user, users, profile, profiles, search, filter
 Requires at least: BP 1.7
-Tested up to: BP 1.7.1
-Stable tag: 3.3
+Tested up to: BP 1.7.2
+Stable tag: 3.4
 
 Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
 
@@ -62,6 +62,8 @@ If you are *not* using the BuddyPress default theme, the procedure might be diff
 
 == Changelog ==
 
+= 3.4 =
+* Added the Value Range Search feature (Contributor: Florian Shießl)
 = 3.3 =
 * Added pagination for search results
 * Added searching in the 'My Friends' tab of the Members Directory

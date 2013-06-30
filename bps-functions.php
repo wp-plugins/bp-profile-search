@@ -4,13 +4,15 @@ include 'bps-searchform.php';
 function bps_fields ($name, $values)
 {
 	global $field;
+	global $bps_options;
 	global $dateboxes;
+	global $textboxes;
 
 	if (bp_is_active ('xprofile')) : 
 	if (function_exists ('bp_has_profile')) : 
 		if (bp_has_profile ('hide_empty_fields=0')) :
-			$dateboxes = array ();
-			$dateboxes[0] = '';
+			$dateboxes = array ('');
+			$textboxes = array ('');
 
 			while (bp_profile_groups ()) : 
 				bp_the_profile_group (); 
@@ -19,14 +21,17 @@ function bps_fields ($name, $values)
 
 				while (bp_profile_fields ()) : 
 					bp_the_profile_field(); 
+					$disabled = '';
+
 					switch (bp_get_the_profile_field_type ())
 					{
 					case 'datebox':	
 						$disabled = 'disabled="disabled"';
 						$dateboxes[bp_get_the_profile_field_id ()] = bp_get_the_profile_field_name ();
 						break;
-					default:
-						$disabled = '';
+					case 'textbox':	
+						if ($field->id == $bps_options['numrange'])  $disabled = 'disabled="disabled"';
+						$textboxes[bp_get_the_profile_field_id ()] = bp_get_the_profile_field_name ();
 						break;
 					}
 ?>
@@ -65,6 +70,27 @@ function bps_agerange ($name, $value)
 	}
 	else
 		echo 'There is no date field in your profile';
+
+	return true;
+}
+
+function bps_numrange ($name, $value)
+{
+	global $textboxes;
+
+	if (count ($textboxes) > 1)
+	{
+		echo "<select name=\"$name\">\n";
+		foreach ($textboxes as $fid => $fname)
+		{
+			echo "<option value=\"$fid\"";
+			if ($fid == $value)  echo " selected=\"selected\"";
+			echo ">$fname &nbsp;</option>\n";
+		}
+		echo "</select>\n";
+	}
+	else
+		echo 'There is no textbox field in your profile';
 
 	return true;
 }
@@ -118,6 +144,11 @@ function bps_search ($posted)
 				switch (bp_get_the_profile_field_type ())
 				{
 				case 'textbox':
+					if ($id == $bps_options['numrange'])
+					{
+						$sql .= $wpdb->prepare (" WHERE field_id = %d AND value >= %d AND value <= %d", $id, $value, $to);
+						break;
+					}
 				case 'textarea':
 					$value = $posted["field_$id"];
 					$escaped = '%'. like_escape ($wpdb->escape ($posted["field_$id"])). '%';

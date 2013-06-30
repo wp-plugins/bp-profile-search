@@ -62,6 +62,23 @@ echo '&nbsp;-&nbsp;';
 echo "<input style='width: 10%;' type='text' name='{$fname}_to' value='$to' />";
 echo "<p class='description'>{$bps_options['agedesc']}</p>";
 echo '</div>';
+				continue;
+			}
+
+			if ($field->id == $bps_options['numrange'])
+			{
+				$from = ($posted == '' && $posted_to == '')? '': (float)$posted;
+				$to = ($posted_to == '')? $from: (float)$posted_to;
+				if ($to < $from)  $to = $from;
+
+echo '<div '. bp_get_field_css_class ('editfield'). '>';
+echo "<label for='$fname'>{$bps_options['numlabel']}</label>";
+echo "<input style='width: 10%;' type='text' name='$fname' value='$from' />";
+echo '&nbsp;-&nbsp;';
+echo "<input style='width: 10%;' type='text' name='{$fname}_to' value='$to' />";
+echo "<p class='description'>{$bps_options['numdesc']}</p>";
+echo '</div>';
+				continue;
 			}
 
 			if (!in_array ($field->id, (array)$bps_options['fields']))  continue;
@@ -192,6 +209,15 @@ echo '<p>';
 			switch (bp_get_the_profile_field_type ())
 			{
 			case 'textbox':
+				if ($field->id == $bps_options['numrange'])
+				{
+					$from = (float)$value;
+					$to = ($value_to == '')? $from: (float)$value_to;
+					if ($to < $from)  $to = $from;
+
+echo "<strong>{$bps_options['numlabel']}:</strong> $from <strong>-</strong> $to<br/>";
+					break;
+				}
 			case 'textarea':
 				$value = esc_attr (stripslashes ($posted[$fname]));
 echo "<strong>$field->name:</strong> $value<br/>";

@@ -3,13 +3,13 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 3.3
+Version: 3.4
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 */
 
 global $bps_version;
-$bps_version = '3.3';
+$bps_version = '3.4';
 
 include 'bps-functions.php';
 
@@ -60,6 +60,9 @@ function bps_set_default_options ()
 	$bps_options['agerange'] = 0;
 	$bps_options['agelabel'] = 'Age Range';
 	$bps_options['agedesc'] = 'minimum and maximum age';
+	$bps_options['numrange'] = 0;
+	$bps_options['numlabel'] = 'Value Range';
+	$bps_options['numdesc'] = 'minimum and maximum value';
 	$bps_options['searchmode'] = 'Partial Match';
 
 	update_option ('bps_options', $bps_options);
@@ -105,7 +108,7 @@ function bps_admin_main ()
 
 	if ($_POST['action'] == 'update')
 	{
-		bps_set_options (array ('header', 'show', 'message', 'fields', 'agerange', 'agelabel', 'agedesc'));
+		bps_set_options (array ('header', 'show', 'message', 'fields', 'agerange', 'agelabel', 'agedesc', 'numrange', 'numlabel', 'numdesc'));
 		$message = "Settings saved.";
 	}
 
@@ -146,6 +149,22 @@ function bps_admin_main ()
 	</td></tr>
 	</table>
 	
+	<h3>Value Range Search</h3>
+
+	<p>If your extended profiles include a numerical field, your search form can include the Value Range Search option. To enable this option, select the numerical field below.</p>	
+
+	<table class="form-table">
+	<tr valign="top"><th scope="row">Numerical Field:</th><td>
+		<?php bps_numrange ('bps_options[numrange]', $bps_options['numrange']); ?>
+	</td></tr>
+	<tr valign="top"><th scope="row">Search Field Label:</th><td>
+		<input type="text" name="bps_options[numlabel]" value="<?php echo $bps_options['numlabel']; ?>"  />
+	</td></tr>
+	<tr valign="top"><th scope="row">Search Field Description:</th><td>
+		<input type="text" name="bps_options[numdesc]" value="<?php echo $bps_options['numdesc']; ?>" class="large-text" />
+	</td></tr>
+	</table>
+
 	<h3>Age Range Search</h3>
 
 	<p>If your extended profiles include a birth date field, your search form can include the Age Range Search option. To enable this option, select the birth date field below.</p>	
