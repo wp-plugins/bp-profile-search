@@ -1,19 +1,22 @@
 <?php
 /*
 Plugin Name: BP Profile Search
-Plugin URI: http://www.blogsweek.com/bp-profile-search/
+Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 3.1
+Version: 3.4
 Author: Andrea Tarantini
-Author URI: http://www.blogsweek.com/
+Author URI: http://www.dontdream.it/
 */
+
+global $bps_version;
+$bps_version = '3.4';
 
 include 'bps-functions.php';
 
 register_activation_hook (__FILE__, 'bps_activate');
 function bps_activate ()
 {
-	bps_set_default_options ();
+//	bps_set_default_options ();
 	return true;
 }
 
@@ -30,8 +33,20 @@ function bps_init ()
 add_action (is_multisite ()? 'network_admin_menu': 'admin_menu', 'bps_add_pages', 20);
 function bps_add_pages ()
 {
-	add_submenu_page ('bp-general-settings', 'Profile Search Setup', 'Profile Search', 'manage_options', 'bp-profile-search', 'bps_admin');
+	add_submenu_page ('users.php', 'Profile Search Setup', 'Profile Search', 'manage_options', 'bp-profile-search', 'bps_admin');
 	return true;
+}
+
+add_filter (is_multisite ()? 'network_admin_plugin_action_links': 'plugin_action_links', 'bps_row_meta', 10, 2);
+function bps_row_meta ($links, $file)
+{
+	if ($file == plugin_basename (__FILE__))
+	{
+		$url = is_multisite ()? network_admin_url ('users.php'): admin_url ('users.php');
+		$settings_link = '<a href="'. add_query_arg (array ('page' => 'bp-profile-search'), $url). '">'. __('Settings', 'buddypress'). '</a>';
+		array_unshift ($links, $settings_link);
+	}
+	return $links;
 }
 
 function bps_set_default_options ()
@@ -45,8 +60,10 @@ function bps_set_default_options ()
 	$bps_options['agerange'] = 0;
 	$bps_options['agelabel'] = 'Age Range';
 	$bps_options['agedesc'] = 'minimum and maximum age';
+	$bps_options['numrange'] = 0;
+	$bps_options['numlabel'] = 'Value Range';
+	$bps_options['numdesc'] = 'minimum and maximum value';
 	$bps_options['searchmode'] = 'Partial Match';
-	$bps_options['filtered'] = 1;
 
 	update_option ('bps_options', $bps_options);
 	return true;
@@ -62,7 +79,7 @@ function bps_admin ()
 
 <div class="wrap">
   
-  <h2><?php echo esc_html ('Profile Search Setup'); ?></h2>
+  <h2>Profile Search Setup</h2>
 
   <ul class="subsubsub">
 <?php
@@ -91,9 +108,11 @@ function bps_admin_main ()
 
 	if ($_POST['action'] == 'update')
 	{
-		bps_set_options (array ('header', 'show', 'message', 'fields', 'agerange', 'agelabel', 'agedesc'));
+		bps_set_options (array ('header', 'show', 'message', 'fields', 'agerange', 'agelabel', 'agedesc', 'numrange', 'numlabel', 'numdesc'));
 		$message = "Settings saved.";
 	}
+
+	$rlink = '<a href="http://dontdream.it/bp-profile-search/">the plugin support page</a>';
 ?>
 
 <?php if ($message) : ?>
@@ -113,7 +132,7 @@ function bps_admin_main ()
 	<li>b) In a sidebar or widget area, using the <em>BP Profile Search</em> widget</li>
 	<li>c) In your template files, e.g. in your Members Directory page, using the code <strong>&lt;?php do_action ('bp_profile_search_form'); ?&gt;</strong></li>
 	</ul>
-	Please note that the Form Header and the Toggle Form feature apply to case c) only.<br/>See <em>readme.txt</em> for more detailed instructions.</p>	
+	Please note that the Form Header and the Toggle Form feature apply to case c) only.<br/>See <?php echo $rlink; ?> for more detailed instructions.</p>	
 
 	<table class="form-table">
 	<tr valign="top"><th scope="row">Search Form Header:</th><td>
@@ -130,6 +149,22 @@ function bps_admin_main ()
 	</td></tr>
 	</table>
 	
+	<h3>Value Range Search</h3>
+
+	<p>If your extended profiles include a numerical field, your search form can include the Value Range Search option. To enable this option, select the numerical field below.</p>	
+
+	<table class="form-table">
+	<tr valign="top"><th scope="row">Numerical Field:</th><td>
+		<?php bps_numrange ('bps_options[numrange]', $bps_options['numrange']); ?>
+	</td></tr>
+	<tr valign="top"><th scope="row">Search Field Label:</th><td>
+		<input type="text" name="bps_options[numlabel]" value="<?php echo $bps_options['numlabel']; ?>"  />
+	</td></tr>
+	<tr valign="top"><th scope="row">Search Field Description:</th><td>
+		<input type="text" name="bps_options[numdesc]" value="<?php echo $bps_options['numdesc']; ?>" class="large-text" />
+	</td></tr>
+	</table>
+
 	<h3>Age Range Search</h3>
 
 	<p>If your extended profiles include a birth date field, your search form can include the Age Range Search option. To enable this option, select the birth date field below.</p>	
@@ -160,7 +195,7 @@ function bps_admin_options ()
 
 	if ($_POST['action'] == 'update')
 	{
-		bps_set_options (array ('searchmode', 'filtered'));
+		bps_set_options (array ('searchmode'));
 		$message = "Settings saved.";
 	}
 ?>
@@ -183,21 +218,6 @@ function bps_admin_options ()
 		<label><input type="radio" name="bps_options[searchmode]" value="Exact Match"<?php if ('Exact Match' == $bps_options['searchmode']) echo ' checked="checked"'; ?> /> Exact Match</label><br />
 	</td></tr>
 	</table>
-	
-	<h3>Filtered Members List</h3>
-
-	<p>BP Profile Search filters the members list in your Members Directory page. Usually there is only one members list in that page, but sometimes widgets or other plugins add more lists, so you have to tell BP Profile Search which is the list to filter. If your searches always return the full members directory, try changing this number here.</p>	
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row">Filtered Members List:</th><td>
-		<select name="bps_options[filtered]">
-		<option value="1"<?php if ('1' == $bps_options['filtered']) echo ' selected="selected"'; ?>>1&nbsp;</option>
-		<option value="2"<?php if ('2' == $bps_options['filtered']) echo ' selected="selected"'; ?>>2&nbsp;</option>
-		<option value="3"<?php if ('3' == $bps_options['filtered']) echo ' selected="selected"'; ?>>3&nbsp;</option>
-		<option value="4"<?php if ('4' == $bps_options['filtered']) echo ' selected="selected"'; ?>>4&nbsp;</option>
-		</select>
-	</td></tr>
-	</table>
 
 	<p class="submit">
 	  <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
@@ -215,20 +235,5 @@ function bps_set_options ($vars)
 		$bps_options[$var] = stripslashes_deep ($_POST['bps_options'][$var]);
 
 	update_option ('bps_options', $bps_options);
-}
-
-function bps_get_vars ($vars)
-{
-	foreach ($vars as $var)
-	{
-		global $$var;
-
-		if (empty ($_POST["$var"]))
-			$$var = empty ($_GET["$var"])? '': $_GET["$var"];
-		else
-			$$var = $_POST["$var"];
-		
-		$$var = stripslashes_deep ($$var);
-	}
 }
 ?>
