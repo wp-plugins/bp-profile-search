@@ -160,6 +160,11 @@ function bps_search ($posted)
 					break;
 
 				case 'selectbox':
+					if ($id == $bps_options['numrange'])
+					{
+						$sql .= $wpdb->prepare (" WHERE field_id = %d AND value >= %d AND value <= %d", $id, $value, $to);
+						break;
+					}
 				case 'radio':
 					$value = $posted["field_$id"];
 					$sql .= $wpdb->prepare (" WHERE field_id = %d AND value = %s", $id, $value);
