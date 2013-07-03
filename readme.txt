@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, friend, friends, user, users, profile, profiles, search, filter
 Requires at least: BP 1.7
 Tested up to: BP 1.7.2
-Stable tag: 3.4
+Stable tag: 3.4.1
 
 Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
 
@@ -30,6 +30,8 @@ In the plugin settings page you have the following options:
 * Select the profile fields to include in the search form (currently the *datebox* profile fields are not supported);
 
 * If your extended profiles include a birth date field, enable the Age Range search, so your visitors can specify the minimum and maximum age for their search.
+
+* If your extended profiles include a numerical *textbox* or *selectbox* field, enable the Value Range search, so your visitors can specify the minimum and maximum value for their search.
 
 * Select the search mode for text fields, between *partial match*, where a search for *John* matches field values of *John*, *Johnson*, *Long John Silver*, and so on, and *exact match*, where a search for *John* matches the field value *John* only.
 
@@ -62,6 +64,8 @@ If you are *not* using the BuddyPress default theme, the procedure might be diff
 
 == Changelog ==
 
+= 3.4.1 =
+* Added *selectbox* profile fields as candidates for the Value Range Search feature
 = 3.4 =
 * Added the Value Range Search feature (Contributor: Florian Shießl)
 = 3.3 =

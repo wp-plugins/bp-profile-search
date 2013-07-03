@@ -3,13 +3,13 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search BuddyPress extended profiles.
-Version: 3.4
+Version: 3.4.1
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 */
 
 global $bps_version;
-$bps_version = '3.4';
+$bps_version = '3.4.1';
 
 include 'bps-functions.php';
 
