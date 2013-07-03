@@ -30,6 +30,7 @@ function bps_fields ($name, $values)
 						$dateboxes[bp_get_the_profile_field_id ()] = bp_get_the_profile_field_name ();
 						break;
 					case 'textbox':	
+					case 'selectbox':	
 						if ($field->id == $bps_options['numrange'])  $disabled = 'disabled="disabled"';
 						$textboxes[bp_get_the_profile_field_id ()] = bp_get_the_profile_field_name ();
 						break;
@@ -90,7 +91,7 @@ function bps_numrange ($name, $value)
 		echo "</select>\n";
 	}
 	else
-		echo 'There is no textbox field in your profile';
+		echo 'There is no textbox or selectbox field in your profile';
 
 	return true;
 }
