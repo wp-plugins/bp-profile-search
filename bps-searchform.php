@@ -224,6 +224,15 @@ echo "<strong>$field->name:</strong> $value<br/>";
 				break;
 
 			case 'selectbox':
+				if ($field->id == $bps_options['numrange'])
+				{
+					$from = (float)$value;
+					$to = ($value_to == '')? $from: (float)$value_to;
+					if ($to < $from)  $to = $from;
+
+echo "<strong>{$bps_options['numlabel']}:</strong> $from <strong>-</strong> $to<br/>";
+					break;
+				}
 			case 'radio':
 				$value = stripslashes ($posted[$fname]);
 echo "<strong>$field->name:</strong> $value<br/>";
