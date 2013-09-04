@@ -1,18 +1,32 @@
 <?php
 
-add_action ('bp_profile_search_form', 'bps_form');
-function bps_form ($form_id)
+add_action ('bp_before_directory_members_tabs', 'bps_add_form');
+function bps_add_form ()
+{
+	global $bps_options;
+
+	if ($bps_options['directory'] == 'Yes')  bps_display_form (0, 'bps_auto');
+}
+
+add_action ('bp_profile_search_form', 'bps_display_form');
+function bps_display_form ($name, $form_id='bps_action')
 {
 	global $field;
 	global $bps_options;
-	global $bps_version;
+	global $bps_globals;
+
+	if (empty ($bps_options['numrange']) && empty ($bps_options['agerange']) && count ((array)$bps_options['fields']) == 0)
+	{
+		printf (__('%1$s: Error, your form is not configured.', 'bps'),
+			"<strong>$bps_globals->plugin $bps_globals->version</strong>");
+		return false;
+	}
 
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
-echo "\n<!-- BP Profile Search $bps_version -->\n";
-	if ($form_id == '')
+echo "\n<!-- $bps_globals->plugin $bps_globals->version - start -->\n";
+	if ($form_id == 'bps_auto' || $form_id == 'bps_action')
 	{
-	$form_id = 'bps_action';
 ?>	
 	<div class="item-list-tabs">
 	<ul>
@@ -26,9 +40,9 @@ echo "\n<!-- BP Profile Search $bps_version -->\n";
 <?php if (in_array ('Enabled', (array)$bps_options['show'])) { ?>
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
-		$('#bps_action').hide();
+		$('#<?php echo $form_id; ?>').hide();
 		$('#bps_show').click(function(){
-			$('#bps_action').toggle();
+			$('#<?php echo $form_id; ?>').toggle();
 		});
 	});
 </script>
@@ -49,22 +63,6 @@ echo "<form action='$action' method='post' id='$form_id' class='standard-form'>"
 			$posted = $_POST[$fname];
 			$posted_to = $_POST[$fname. '_to'];
 
-			if ($field->id == $bps_options['agerange'])
-			{
-				$from = ($posted == '' && $posted_to == '')? '': (int)$posted;
-				$to = ($posted_to == '')? $from: (int)$posted_to;
-				if ($to < $from)  $to = $from;
-
-echo '<div '. bp_get_field_css_class ('editfield'). '>';
-echo "<label for='$fname'>{$bps_options['agelabel']}</label>";
-echo "<input style='width: 10%;' type='text' name='$fname' value='$from' />";
-echo '&nbsp;-&nbsp;';
-echo "<input style='width: 10%;' type='text' name='{$fname}_to' value='$to' />";
-echo "<p class='description'>{$bps_options['agedesc']}</p>";
-echo '</div>';
-				continue;
-			}
-
 			if ($field->id == $bps_options['numrange'])
 			{
 				$from = ($posted == '' && $posted_to == '')? '': (float)$posted;
@@ -77,6 +75,22 @@ echo "<input style='width: 10%;' type='text' name='$fname' value='$from' />";
 echo '&nbsp;-&nbsp;';
 echo "<input style='width: 10%;' type='text' name='{$fname}_to' value='$to' />";
 echo "<p class='description'>{$bps_options['numdesc']}</p>";
+echo '</div>';
+				continue;
+			}
+
+			if ($field->id == $bps_options['agerange'])
+			{
+				$from = ($posted == '' && $posted_to == '')? '': (int)$posted;
+				$to = ($posted_to == '')? $from: (int)$posted_to;
+				if ($to < $from)  $to = $from;
+
+echo '<div '. bp_get_field_css_class ('editfield'). '>';
+echo "<label for='$fname'>{$bps_options['agelabel']}</label>";
+echo "<input style='width: 10%;' type='text' name='$fname' value='$from' />";
+echo '&nbsp;-&nbsp;';
+echo "<input style='width: 10%;' type='text' name='{$fname}_to' value='$to' />";
+echo "<p class='description'>{$bps_options['agedesc']}</p>";
 echo '</div>';
 				continue;
 			}
@@ -145,7 +159,7 @@ echo "<div id='$fname'>";
 echo "<label><input $selected type='radio' name='$fname' value='$value'>$value</label>";
 			}
 echo '</div>';
-echo "<a class='clear-value' href='javascript:clear(\"$fname\");'>". __('Clear', 'buddypress'). "</a>";
+echo "<a class='clear-value' href='javascript:clear(\"$fname\");'>". __('Clear', 'bps'). "</a>";
 echo '</div>';
 			break;
 
@@ -168,19 +182,14 @@ echo '</div>';
 		}
 	}
 
-	if (empty ($bps_options['agerange']) && count ((array)$bps_options['fields']) == 0)
-	{
-		$url = is_multisite ()? network_admin_url ('users.php'): admin_url ('users.php');
-		$settings = add_query_arg (array ('page' => 'bp-profile-search'), $url);
-echo "<p>Please <a href='$settings'>select your form fields</a>.</p>";
-	}
-
 echo "<div class='submit'>";
-echo "<input type='submit' value='". __('Search', 'buddypress'). "' />";
+echo "<input type='submit' value='". __('Search', 'bps'). "' />";
 echo '</div>';
 echo "<input type='hidden' name='bp_profile_search' value='true' />";
 echo '</form>';
-echo "\n<!-- BP Profile Search $bps_version - end -->\n";
+echo "\n<!-- $bps_globals->plugin $bps_globals->version - end -->\n";
+
+	return true;
 }
 
 function bps_your_search ()
@@ -188,10 +197,7 @@ function bps_your_search ()
 	global $field;
 	global $bps_options;
 
-	if (isset ($_POST['bp_profile_search']))
-		$posted = $_POST;
-	else if (isset ($_COOKIE['bp-profile-search']))
-		$posted = unserialize (stripslashes ($_COOKIE['bp-profile-search']));
+	$posted = $_POST;
 
 echo '<p>';
 	if (bp_has_profile ('hide_empty_fields=0'))  while (bp_profile_groups ())
@@ -258,5 +264,6 @@ echo "<strong>{$bps_options['agelabel']}:</strong> $from <strong>-</strong> $to<
 	}
 
 echo '</p>';
+	return true;
 }
 ?>
