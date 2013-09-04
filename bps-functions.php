@@ -8,7 +8,6 @@ function bps_fields ($name, $values)
 	global $dateboxes;
 	global $textboxes;
 
-	if (bp_is_active ('xprofile')) : 
 	if (function_exists ('bp_has_profile')) : 
 		if (bp_has_profile ('hide_empty_fields=0')) :
 			$dateboxes = array ('');
@@ -36,20 +35,16 @@ function bps_fields ($name, $values)
 						break;
 					}
 ?>
-<label><input type="checkbox" name="<?php echo $name; ?>[]" value="<?php echo $field->id; ?>" <?php echo $disabled; ?>
-<?php if (in_array ($field->id, (array)$values))  echo ' checked="checked"'; ?> />
-<?php bp_the_profile_field_name(); ?>
-<?php if (bp_get_the_profile_field_is_required ()) 
-	_e (' (required) ', 'buddypress');
-else
-	_e (' (optional) ', 'buddypress'); ?>
-<?php bp_the_profile_field_description (); ?></label><br />
-
-<?php 			endwhile;
+<label>
+	<input type="checkbox" name="<?php echo $name; ?>[]" value="<?php echo $field->id; ?>" <?php echo $disabled; ?>
+		<?php if (in_array ($field->id, (array)$values))  echo ' checked="checked"'; ?> />
+	<?php bp_the_profile_field_name (); ?>
+</label><br />
+<?php
+				endwhile;
 			endwhile; 
 		endif;
 	endif; 
-	endif;
 
 	return true;
 }
@@ -70,7 +65,7 @@ function bps_agerange ($name, $value)
 		echo "</select>\n";
 	}
 	else
-		echo 'There is no date field in your profile';
+		_e('There is no date field in user profiles.', 'bps');
 
 	return true;
 }
@@ -91,7 +86,7 @@ function bps_numrange ($name, $value)
 		echo "</select>\n";
 	}
 	else
-		echo 'There is no textbox or selectbox field in your profile';
+		_e('There is no textbox or selectbox field in user profiles.', 'bps');
 
 	return true;
 }
@@ -112,10 +107,7 @@ function bps_cookies ()
 		if (defined ('DOING_AJAX'))
 			$bps_results = bps_search (unserialize (stripslashes ($_COOKIE['bp-profile-search'])));
 		else
-		{
-			remove_action ('bp_before_directory_members_content', 'bps_your_search');
 			setcookie ('bp-profile-search', '', 0, COOKIEPATH);
-		}
 	}
 }
 
@@ -258,7 +250,7 @@ add_shortcode ('bp_profile_search_form', 'bps_shortcode');
 function bps_shortcode ($attr, $content)
 {
 	ob_start ();
-	bps_form ('bps_shortcode');
+	bps_display_form (0, 'bps_shortcode');
 	return ob_get_clean ();
 }
 
@@ -266,38 +258,38 @@ class bps_widget extends WP_Widget
 {
 	function bps_widget ()
 	{
-		$widget_ops = array ('description' => 'Your BP Profile Search form');
-		$this->WP_Widget ('bp_profile_search', 'BP Profile Search', $widget_ops);
+		$widget_ops = array ('description' => __('Your BP Profile Search form', 'bps'));
+		$this->WP_Widget ('bp_profile_search', __('BP Profile Search', 'bps'), $widget_ops);
 	}
 
 	function widget ($args, $instance)
 	{
 		extract ($args);
-		$title = apply_filters ('widget_title', esc_attr ($instance['title']));
+		$title = apply_filters ('widget_title', $instance['title']);
 	
 		echo $before_widget;
 		if ($title)
 			echo $before_title. $title. $after_title;
-		bps_form ('bps_widget');
+		bps_display_form (0, 'bps_widget');
 		echo $after_widget;
 	}
 
 	function update ($new_instance, $old_instance)
 	{
 		$instance = $old_instance;
-		$instance['title'] = strip_tags ($new_instance['title']);
+		$instance['title'] = $new_instance['title'];
 		return $instance;
 	}
 
 	function form ($instance)
 	{
-		$title = strip_tags ($instance['title']);
-	?>
-		<p>
-		<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e ('Title:'); ?></label>
-		<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
-		</p>
-	<?php
+		$title = $instance['title'];
+?>
+<p>
+	<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e('Title:', 'bps'); ?></label>
+	<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
+</p>
+<?php
 	}
 }
 
