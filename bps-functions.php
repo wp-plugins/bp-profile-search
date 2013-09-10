@@ -91,22 +91,30 @@ function bps_numrange ($name, $value)
 	return true;
 }
 
-add_action ('wp_loaded', 'bps_cookies');
-function bps_cookies ()
+add_action ('wp_loaded', 'bps_set_cookie');
+function bps_set_cookie ()
 {
-	global $bps_results;
+	global $bps_args;
 
 	if (isset ($_POST['bp_profile_search']))
 	{
-		$bps_results = bps_search ($_POST);
+		$bps_args = $_POST;
 		add_action ('bp_before_directory_members_content', 'bps_your_search');
 		setcookie ('bp-profile-search', serialize ($_POST), 0, COOKIEPATH);
 	}
 	else if (isset ($_COOKIE['bp-profile-search']))
 	{
 		if (defined ('DOING_AJAX'))
-			$bps_results = bps_search (unserialize (stripslashes ($_COOKIE['bp-profile-search'])));
-		else
+			$bps_args = unserialize (stripslashes ($_COOKIE['bp-profile-search']));
+	}
+}
+
+add_action ('wp', 'bps_del_cookie');
+function bps_del_cookie ()
+{
+	if (isset ($_COOKIE['bp-profile-search']))
+	{
+		if (is_page (bp_get_members_root_slug ()))
 			setcookie ('bp-profile-search', '', 0, COOKIEPATH);
 	}
 }
@@ -226,17 +234,22 @@ function bps_remove_filter ()
 
 function bps_user_query ($query)
 {
-	global $bps_results;
+	global $bps_args;
 
-	if (isset ($bps_results) && $bps_results['validated'])
+	if (!isset ($bps_args))  return $query;
+
+	$bps_results = bps_search ($bps_args);
+	if ($bps_results['validated'])
 	{
 		$users = $bps_results['users'];
 
-		if ($query->query_vars['user_id'])
+		if ($query->query_vars['include'] !== false)
 		{
-			$friends = friends_get_friend_user_ids ($query->query_vars['user_id']);
+			$included = $query->query_vars['include'];
+			if (!is_array ($included))
+				$included = explode (',', $included);
 
-			$users = array_intersect ($users, $friends);
+			$users = array_intersect ($users, $included);
 			if (count ($users) == 0)  $users = array (0);
 		}
 
