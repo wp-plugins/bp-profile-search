@@ -112,6 +112,8 @@ function bps_set_cookie ()
 add_action ('wp', 'bps_del_cookie');
 function bps_del_cookie ()
 {
+	if (isset ($_POST['bp_profile_search']))  return false;
+
 	if (isset ($_COOKIE['bp-profile-search']))
 	{
 		if (is_page (bp_get_members_root_slug ()))
