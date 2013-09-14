@@ -51,6 +51,8 @@ There are three different ways to integrate your BP Profile Search form in your 
 
 == Changelog ==
 
+= 3.5.2 =
+* Fixed a pagination bug introduced in 3.5.1
 = 3.5.1 =
 * Fixed a few conflicts with other plugins and themes
 = 3.5 =
