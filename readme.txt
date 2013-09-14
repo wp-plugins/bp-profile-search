@@ -1,6 +1,6 @@
 === BP Profile Search ===
 Contributors: dontdream
-Tags: buddypress, member, members, friend, friends, user, users, profile, profiles, search, filter
+Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 1.8.1
 Stable tag: 3.5.2
