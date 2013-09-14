@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, friend, friends, user, users, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 1.8.1
-Stable tag: 3.5.1
+Stable tag: 3.5.2
 
 Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
 
