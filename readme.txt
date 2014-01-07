@@ -17,9 +17,9 @@ In all three cases when visitors click the 'Search' button, they are redirected 
 
 = Translations =
 
-Spanish (es_ES), by [Andrew Kurtis, WebHostingHub](http://www.webhostinghub.com/)
-Russian (ru_RU), by [Ivan](http://olymproject.org/)
-Italian (it_IT)
+* Spanish (es_ES), by [Andrew Kurtis, WebHostingHub](http://www.webhostinghub.com/)
+* Russian (ru_RU), by [Ivan](http://olymproject.org/)
+* Italian (it_IT)
 
 == Installation ==
 
