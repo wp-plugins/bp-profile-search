@@ -25,6 +25,8 @@ function bps_display_form ($name, $form_id='bps_action')
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
 echo "\n<!-- $bps_globals->plugin $bps_globals->version - start -->\n";
+if ($form_id != 'bps_auto')  echo "<div id='buddypress'>";
+
 	if ($form_id == 'bps_auto' || $form_id == 'bps_action')
 	{
 ?>	
@@ -159,7 +161,7 @@ echo "<div id='$fname'>";
 echo "<label><input $selected type='radio' name='$fname' value='$value'>$value</label>";
 			}
 echo '</div>';
-echo "<a class='clear-value' href='javascript:clear(\"$fname\");'>". __('Clear', 'bps'). "</a>";
+echo "<a class='clear-value' href='javascript:clear(\"$fname\");'>". __('Clear', 'buddypress'). "</a>";
 echo '</div>';
 			break;
 
@@ -183,10 +185,11 @@ echo '</div>';
 	}
 
 echo "<div class='submit'>";
-echo "<input type='submit' value='". __('Search', 'bps'). "' />";
+echo "<input type='submit' value='". __('Search', 'buddypress'). "' />";
 echo '</div>';
 echo "<input type='hidden' name='bp_profile_search' value='true' />";
 echo '</form>';
+if ($form_id != 'bps_auto')  echo '</div>';
 echo "\n<!-- $bps_globals->plugin $bps_globals->version - end -->\n";
 
 	return true;
