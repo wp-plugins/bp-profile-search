@@ -201,6 +201,7 @@ function bps_your_search ()
 	global $bps_options;
 
 	$posted = $_POST;
+	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
 echo '<p>';
 	if (bp_has_profile ('hide_empty_fields=0'))  while (bp_profile_groups ())
@@ -266,6 +267,7 @@ echo "<strong>{$bps_options['agelabel']}:</strong> $from <strong>-</strong> $to<
 		}
 	}
 
+echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>";
 echo '</p>';
 	return true;
 }
