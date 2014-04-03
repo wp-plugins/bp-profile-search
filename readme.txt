@@ -62,7 +62,8 @@ After you build your search form, you can display it:
 * In your Members Directory page, selecting the option *Add to Directory*
 * In a sidebar or widget area, using the widget *Profile Search*
 * In a post or page, using the shortcode **[bp_profile_search_form]**
-* Anywhere in your theme, using the PHP code **&lt;?php do_action ('bp_profile_search_form'); ?&gt;**
+* Anywhere in your theme, using the PHP code
+**&lt;?php do_action ('bp_profile_search_form'); ?&gt;**
 
 == Changelog ==
 
