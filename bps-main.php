@@ -3,11 +3,12 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search your BuddyPress Members Directory.
-Version: 3.6
+Version: 3.6.1
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 */
 
+define ('BPS_VERSION', '3.6.1');
 include 'bps-functions.php';
 
 add_action ('plugins_loaded', 'bps_translate');
@@ -16,31 +17,15 @@ function bps_translate ()
 	load_plugin_textdomain ('bps', false, basename (dirname (__FILE__)). '/languages');
 }
 
-register_activation_hook (__FILE__, 'bps_activate');
-function bps_activate ()
-{
-	global $bps_options;
-
-	bps_init ();
-	if (isset ($bps_options['version']) && version_compare ($bps_options['version'], '3.6', 'ge'))  return true;
-
-	bps_init_form ();
-	bps_active_for_network ()? update_site_option ('bps_options', $bps_options): update_option ('bps_options', $bps_options);
-
-	return true;
-}
-
 add_action ('init', 'bps_init');
 function bps_init ()
 {
 	global $bps_options;
 
 	$bps_options = bps_active_for_network ()? get_site_option ('bps_options'): get_option ('bps_options');
-	if ($bps_options == false)
-	{
-		bps_init_form ();
-	}	
+	if (isset ($bps_options['version']) && version_compare ($bps_options['version'], '3.6', 'ge'))  return true;
 
+	bps_init_form ();
 	return true;
 }
 
@@ -85,7 +70,7 @@ function bps_init_form ()
 	global $bps_options;
 
 	$bps_options = array ();
-	$bps_options['version'] = '3.6';
+	$bps_options['version'] = BPS_VERSION;
 	$bps_options['field_name'] = array ();
 	$bps_options['field_label'] = array ();
 	$bps_options['field_desc'] = array ();
@@ -248,5 +233,13 @@ function bps_update_form ($vars, $arrays)
 	bps_active_for_network ()? update_site_option ('bps_options', $bps_options): update_option ('bps_options', $bps_options);
 
 	return __('Settings saved.', 'bps');
+}
+
+function bps_whereami ()
+{
+	if (is_admin ())
+		return defined ('DOING_AJAX')? 'ajax': 'admin';
+
+	return 'frontend';		
 }
 ?>

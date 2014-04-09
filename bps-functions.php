@@ -84,15 +84,13 @@ __('In both modes, two wildcard characters are available:', 'bps'). '
 
 function bps_admin_js ()
 {
-	global $bps_options;
-
 	$translations = array (
 		'field' => __('field', 'bps'),
 		'label' => __('label', 'bps'),
 		'description' => __('description', 'bps'),
 		'range' => __('Range', 'bps'),
 	);
-	wp_enqueue_script ('bps-admin', plugins_url ('bps-admin.js', __FILE__), array ('jquery-ui-sortable'), $bps_options['version']);
+	wp_enqueue_script ('bps-admin', plugins_url ('bps-admin.js', __FILE__), array ('jquery-ui-sortable'), BPS_VERSION);
 	wp_localize_script ('bps-admin', 'bps_strings', $translations);
 }
 

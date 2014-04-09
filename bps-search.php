@@ -7,9 +7,10 @@ function bps_set_cookie ()
 
 	if (isset ($_POST['bp_profile_search']))
 	{
-		$bps_args = $_POST;
+		$bps_args = apply_filters ('bps_post_data', $_POST);
+
 		add_action ('bp_before_directory_members_content', 'bps_your_search');
-		setcookie ('bp-profile-search', serialize ($_POST), 0, COOKIEPATH);
+		setcookie ('bp-profile-search', serialize ($bps_args), 0, COOKIEPATH);
 	}
 	else if (isset ($_COOKIE['bp-profile-search']))
 	{

@@ -16,13 +16,13 @@ function bps_display_form ($name, $tag='bps_action')
 	if (empty ($bps_options['field_name']))
 	{
 		printf ('<p class="bps_error">'. __('%s: Error, you have not configured your search form.', 'bps'). '</p>',
-			"<strong>BP Profile Search $bps_options[version]</strong>");
+			'<strong>BP Profile Search '. BPS_VERSION. '</strong>');
 		return false;
 	}
 
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
-echo "\n<!-- BP Profile Search $bps_options[version] - start -->\n";
+echo "\n<!-- BP Profile Search ". BPS_VERSION. " - start -->\n";
 if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 
 	if ($tag == 'bps_auto')
@@ -173,7 +173,7 @@ echo '</div>';
 echo "<input type='hidden' name='bp_profile_search' value='true' />";
 echo '</form>';
 if ($tag != 'bps_auto')  echo '</div>';
-echo "\n<!-- BP Profile Search $bps_options[version] - end -->\n";
+echo "\n<!-- BP Profile Search ". BPS_VERSION. " - end -->\n";
 
 	return true;
 }

@@ -3,15 +3,15 @@ Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 1.9.2
-Stable tag: 3.6
+Stable tag: 3.6.1
 
 Lets visitors search your BuddyPress Members Directory and their Friends list.
 
 == Description ==
 
-BP Profile Search adds a configurable search form to your BuddyPress site, to let visitors search your Members Directory and their Friends list.
+With BP Profile Search you can build a customized form to let visitors search your BuddyPress Members Directory and, if they are Members, their Friends list.
 
-You can insert the search form in your Members Directory page, in a sidebar or widget area, or in any post or page.
+You can insert the search form in your Members Directory page, in a sidebar or widget area, or in any post or page without modifying your theme.
 
 When visitors click the *Search* button, they are redirected to your Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
 
@@ -67,6 +67,8 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 3.6.1 =
+* Fixed PHP warnings after upgrade
 = 3.6 =
 * Redesigned settings page, added Help section
 * Added customization of field label and description
