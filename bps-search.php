@@ -70,6 +70,7 @@ function bps_search ($posted)
 			switch ($field->type)
 			{
 			case 'textbox':
+			case 'number':
 			case 'textarea':
 			case 'selectbox':
 			case 'radio':
@@ -104,6 +105,7 @@ function bps_search ($posted)
 			switch ($field->type)
 			{
 			case 'textbox':
+			case 'number':
 			case 'textarea':
 				$value = $posted[$fname];
 				$escaped = '%'. esc_sql (like_escape ($posted[$fname])). '%';

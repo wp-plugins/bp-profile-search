@@ -87,6 +87,13 @@ echo "<label for='$fname'>$label</label>";
 echo "<input type='text' name='$fname' id='$fname' value='$value' />";
 			break;
 
+		case 'number':
+			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
+			$value = esc_attr (stripslashes ($posted));
+echo "<label for='$fname'>$label</label>";
+echo "<input type='number' name='$fname' id='$fname' value='$value' />";
+			break;
+
 		case 'textarea':
 			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
 			$value = esc_textarea (stripslashes ($posted));
@@ -218,6 +225,7 @@ echo "<br/>";
 			switch ($field->type)
 			{
 			case 'textbox':
+			case 'number':
 			case 'textarea':
 			case 'selectbox':
 			case 'radio':
