@@ -28,7 +28,7 @@ if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 	if ($tag == 'bps_auto')
 	{
 ?>	
-	<div class="item-list-tabs">
+	<div class="item-list-tabs bps_header">
 	<ul>
 	<li><?php echo $bps_options['header']; ?></li>
 <?php if (in_array ('Enabled', $bps_options['show'])) { ?>
