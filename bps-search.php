@@ -53,11 +53,12 @@ function bps_search ($posted)
 	$emptyform = true;
 	$results = array ('users' => array (0), 'validated' => true);
 
+	list ($x, $fields) = bps_get_fields ();
 	foreach ($bps_options['field_name'] as $k => $id)
 	{
-		$field = new BP_XProfile_Field ($id);
-		if (empty ($field->id))  continue;
-
+		if (empty ($fields[$id]))  continue;
+	
+		$field = $fields[$id];
 		$fname = 'field_'. $id;
 		$range = isset ($bps_options['field_range'][$k]);
 		$sql = "SELECT DISTINCT user_id FROM {$bp->profile->table_name_data}";

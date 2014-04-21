@@ -51,14 +51,16 @@ if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 <?php
 	}
 
+	list ($x, $fields) = bps_get_fields ();
+
 echo "<form action='$action' method='post' id='$tag' class='standard-form'>";
 
 	$j = 0;
 	foreach ($bps_options['field_name'] as $k => $id)
 	{
-		$field = new BP_XProfile_Field ($id);
-		if (empty ($field->id))  continue;
-
+		if (empty ($fields[$id]))  continue;
+	
+		$field = $fields[$id];
 		$label = $bps_options['field_label'][$k];
 		$desc = $bps_options['field_desc'][$k];
 		$range = isset ($bps_options['field_range'][$k]);
@@ -107,12 +109,12 @@ echo "<select name='$fname' id='$fname'>";
 echo "<option value=''></option>";
 
 			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
-			$options = $field->get_children ();
+			$options = bps_get_options ($field->id);
 			foreach ($options as $option)
 			{
-				$option->name = trim ($option->name);
-				$value = esc_attr (stripslashes ($option->name));
-				$selected = ($option->name == $posted)? "selected='selected'": "";
+				$option = trim ($option);
+				$value = esc_attr (stripslashes ($option));
+				$selected = ($option == $posted)? "selected='selected'": "";
 echo "<option $selected value='$value'>$value</option>";
 			}
 echo "</select>";
@@ -123,12 +125,12 @@ echo "<label for='$fname'>$label</label>";
 echo "<select name='{$fname}[]' id='$fname' multiple='multiple'>";
 
 			$posted = isset ($_POST[$fname])? $_POST[$fname]: array ();
-			$options = $field->get_children ();
+			$options = bps_get_options ($field->id);
 			foreach ($options as $option)
 			{
-				$option->name = trim ($option->name);
-				$value = esc_attr (stripslashes ($option->name));
-				$selected = (in_array ($option->name, $posted))? "selected='selected'": "";
+				$option = trim ($option);
+				$value = esc_attr (stripslashes ($option));
+				$selected = (in_array ($option, $posted))? "selected='selected'": "";
 echo "<option $selected value='$value'>$value</option>";
 			}
 echo "</select>";
@@ -140,12 +142,12 @@ echo "<span class='label'>$label</span>";
 echo "<div id='$fname'>";
 
 			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
-			$options = $field->get_children ();
+			$options = bps_get_options ($field->id);
 			foreach ($options as $option)
 			{
-				$option->name = trim ($option->name);
-				$value = esc_attr (stripslashes ($option->name));
-				$selected = ($option->name == $posted)? "checked='checked'": "";
+				$option = trim ($option);
+				$value = esc_attr (stripslashes ($option));
+				$selected = ($option == $posted)? "checked='checked'": "";
 echo "<label><input $selected type='radio' name='$fname' value='$value'>$value</label>";
 			}
 echo '</div>';
@@ -158,12 +160,12 @@ echo "<div class='checkbox'>";
 echo "<span class='label'>$label</span>";
 
 			$posted = isset ($_POST[$fname])? $_POST[$fname]: array ();
-			$options = $field->get_children ();
+			$options = bps_get_options ($field->id);
 			foreach ($options as $option)
 			{
-				$option->name = trim ($option->name);
-				$value = esc_attr (stripslashes ($option->name));
-				$selected = (in_array ($option->name, $posted))? "checked='checked'": "";
+				$option = trim ($option);
+				$value = esc_attr (stripslashes ($option));
+				$selected = (in_array ($option, $posted))? "checked='checked'": "";
 echo "<label><input $selected type='checkbox' name='{$fname}[]' value='$value'>$value</label>";
 			}
 echo '</div>';
@@ -195,11 +197,12 @@ function bps_your_search ()
 
 echo '<p class="bps_filters">';
 
+	list ($x, $fields) = bps_get_fields ();
 	foreach ($bps_options['field_name'] as $k => $id)
 	{
-		$field = new BP_XProfile_Field ($id);
-		if (empty ($field->id))  continue;
-
+		if (empty ($fields[$id]))  continue;
+	
+		$field = $fields[$id];
 		$fname = 'field_'. $id;
 		$label = $bps_options['field_label'][$k];
 		$range = isset ($bps_options['field_range'][$k]);
@@ -245,6 +248,7 @@ echo "<strong>$label:</strong> ". esc_html (implode (', ', $values)). "<br/>";
 	if ($emptyform == false)
 echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>";
 echo '</p>';
+
 	return true;
 }
 ?>

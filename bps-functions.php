@@ -111,13 +111,13 @@ function bps_update_fields ()
 	{
 		if (empty ($fields[$id]))  continue;
 
-		$type = $fields[$id]['type'];
+		$type = $fields[$id]->type;
 
 		$label = stripslashes ($posted['field_label'][$k]);
-		if (empty ($label))  $label = $fields[$id]['name'];
+		if (empty ($label))  $label = $fields[$id]->name;
 
 		$desc = stripslashes ($posted['field_desc'][$k]);
-		if (empty ($desc))  $desc = $fields[$id]['description'];
+		if (empty ($desc))  $desc = $fields[$id]->description;
 
 		$bps_options['field_name'][$j] = $id;
 		$bps_options['field_label'][$j] = $label;
@@ -210,11 +210,28 @@ function bps_get_fields ()
 			{
 				bp_the_profile_field ();
 				$groups[$group->name][] = array ('id' => $field->id, 'name' => $field->name);
-				$fields[$field->id] = array ('name' => $field->name, 'description' => $field->description, 'type' => $field->type);
+				$fields[$field->id] = $field;
 			}
 		}
 	}
 
 	return array ($groups, $fields);
+}
+
+function bps_get_options ($id)
+{
+	global $wpdb;
+	static $options = array ();
+
+	if (count ($options))  return $options[$id];
+
+	$table = $wpdb->prefix. 'bp_xprofile_fields';
+	$sql = "SELECT parent_id, name FROM $table WHERE type = 'option' ORDER BY parent_id, option_order";
+	$rows = $wpdb->get_results ($sql);
+
+	foreach ($rows as $row)
+		$options[$row->parent_id][] = $row->name;
+
+	return $options[$id];
 }
 ?>
