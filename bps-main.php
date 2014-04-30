@@ -3,12 +3,12 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search your BuddyPress Members Directory.
-Version: 3.6.3
+Version: 3.6.4
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 */
 
-define ('BPS_VERSION', '3.6.3');
+define ('BPS_VERSION', '3.6.4');
 include 'bps-functions.php';
 if (file_exists (WP_PLUGIN_DIR. '/bps-custom.php'))
 	include WP_PLUGIN_DIR. '/bps-custom.php';
@@ -25,9 +25,10 @@ function bps_init ()
 	global $bps_options;
 
 	$bps_options = bps_active_for_network ()? get_site_option ('bps_options'): get_option ('bps_options');
-	if (isset ($bps_options['version']) && version_compare ($bps_options['version'], '3.6', 'ge'))  return true;
 
-	bps_init_form ();
+	if (empty ($bps_options['version']))  bps_init_form ();
+	if (empty ($bps_options['method']))  $bps_options['method'] = 'POST';
+
 	return true;
 }
 
@@ -82,6 +83,7 @@ function bps_init_form ()
 	$bps_options['show'] = array ('Enabled');
 	$bps_options['message'] = __('Toggle Form', 'bps');
 	$bps_options['searchmode'] = 'Partial Match';
+	$bps_options['method'] = 'POST';
 
 	return true;
 }
@@ -209,6 +211,21 @@ function bps_admin_options ()
 	</fieldset>
 	</td></tr>
 	</table>
+
+	<!-- h3><?php _e('Form Submission Method', 'bps'); ?></h3>
+
+	<p>
+	<?php _e('Select POST or GET to submit your form.', 'bps'); ?>
+	</p>
+
+	<table class="form-table">
+	<tr valign="top"><th scope="row"><?php _e('Form Submission Method:', 'bps'); ?></th><td>
+	<fieldset>
+		<label><input type="radio" name="bps_options[method]" value="POST"<?php if ('POST' == $bps_options['method']) echo ' checked="checked"'; ?> /> <span><?php _e('POST', 'bps'); ?></span></label><br />
+		<label><input type="radio" name="bps_options[method]" value="GET"<?php if ('GET' == $bps_options['method']) echo ' checked="checked"'; ?> /> <span><?php _e('GET', 'bps'); ?></span></label><br />
+	</fieldset>
+	</td></tr>
+	</table -->
 
 	<p class="submit">
 	  <input type="submit" class="button-primary" value="<?php _e('Save Settings', 'bps'); ?>" />

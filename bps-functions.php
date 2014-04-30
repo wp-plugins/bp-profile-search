@@ -111,23 +111,30 @@ function bps_update_fields ()
 	{
 		if (empty ($fields[$id]))  continue;
 
-		$type = $fields[$id]->type;
-
+		$field = $fields[$id];
+		$field_type = apply_filters ('bps_field_validation_type', $field->type, $field);
 		$label = stripslashes ($posted['field_label'][$k]);
-		if (empty ($label))  $label = $fields[$id]->name;
-
 		$desc = stripslashes ($posted['field_desc'][$k]);
-		if (empty ($desc))  $desc = $fields[$id]->description;
 
 		$bps_options['field_name'][$j] = $id;
-		$bps_options['field_label'][$j] = $label;
-		$bps_options['field_desc'][$j] = $desc;
-		if (isset ($posted['field_range'][$k]) && $type != 'checkbox' && $type != 'multiselectbox')
-			$bps_options['field_range'][$j] = $j;
+		$bps_options['field_label'][$j] = $l = $label;
+		$bps_options['field_desc'][$j] = $d = $desc;
+		$bps_options['field_range'][$j] = $r = isset ($posted['field_range'][$k]);
 
-		if ($type == 'datebox')
-			$bps_options['field_range'][$j] = $j;
+		if (bps_custom_field ($field_type))
+		{
+			list ($l, $d, $r) = apply_filters ('bps_field_validation', array ($l, $d, $r), $field);
+			$bps_options['field_label'][$j] = $l;
+			$bps_options['field_desc'][$j] = $d;
+			$bps_options['field_range'][$j] = $r;
+		}
+		else
+		{
+			if ($field_type == 'datebox')  $bps_options['field_range'][$j] = true;
+			if ($field_type == 'checkbox' || $field_type == 'multiselectbox')  $bps_options['field_range'][$j] = false;
+		}
 
+		if ($bps_options['field_range'][$j] == false)  $bps_options['field_range'][$j] = null;
 		$j = $j + 1;
 	}
 }
@@ -147,8 +154,13 @@ function bps_form_fields ()
 	{
 		if (empty ($fields[$id]))  continue;
 
+		$field = $fields[$id];
 		$label = $bps_options['field_label'][$k];
+		$default = $field->name;
+		$showlabel = empty ($label)? "placeholder=\"$default\"": "value=\"$label\"";
 		$desc = $bps_options['field_desc'][$k];
+		$default = $field->description;
+		$showdesc = empty ($desc)? "placeholder=\"$default\"": "value=\"$desc\"";
 ?>
 
 		<p id="field_div<?php echo $k; ?>" class="sortable">
@@ -156,8 +168,8 @@ function bps_form_fields ()
 <?php
 			bps_profile_fields ("bps_options[field_name][$k]", "field_name$k", $id);
 ?>
-			<input type="text" name="bps_options[field_label][<?php echo $k; ?>]" id="field_label<?php echo $k; ?>" value="<?php echo $label; ?>" style="width: 16%" />
-			<input type="text" name="bps_options[field_desc][<?php echo $k; ?>]" id="field_desc<?php echo $k; ?>" value="<?php echo $desc; ?>" style="width: 32%" />
+			<input type="text" name="bps_options[field_label][<?php echo $k; ?>]" id="field_label<?php echo $k; ?>" <?php echo $showlabel; ?> style="width: 16%" />
+			<input type="text" name="bps_options[field_desc][<?php echo $k; ?>]" id="field_desc<?php echo $k; ?>" <?php echo $showdesc; ?> style="width: 32%" />
 			<label><input type="checkbox" name="bps_options[field_range][<?php echo $k; ?>]" id="field_range<?php echo $k; ?>" value="<?php echo $k; ?>"<?php if (isset ($bps_options['field_range'][$k])) echo ' checked="checked"'; ?> /><?php _e('Range', 'bps'); ?> </label>
 			<a href="javascript:hide('field_div<?php echo $k; ?>')" class="delete">[x]</a>
 		</p>
@@ -215,7 +227,13 @@ function bps_get_fields ()
 		}
 	}
 
+	list ($groups, $fields) = apply_filters ('bps_get_fields', array ($groups, $fields));
 	return array ($groups, $fields);
+}
+
+function bps_custom_field ($type)
+{
+	return !in_array ($type, array ('textbox', 'number', 'textarea', 'selectbox', 'multiselectbox', 'radio', 'checkbox', 'datebox'));
 }
 
 function bps_get_options ($id)
@@ -223,7 +241,7 @@ function bps_get_options ($id)
 	global $wpdb;
 	static $options = array ();
 
-	if (count ($options))  return $options[$id];
+	if (isset ($options[$id]))  return $options[$id];
 
 	$table = $wpdb->prefix. 'bp_xprofile_fields';
 	$sql = "SELECT parent_id, name FROM $table WHERE type = 'option' ORDER BY parent_id, option_order";
@@ -232,6 +250,6 @@ function bps_get_options ($id)
 	foreach ($rows as $row)
 		$options[$row->parent_id][] = $row->name;
 
-	return $options[$id];
+	return isset ($options[$id])? $options[$id]: array ();
 }
 ?>

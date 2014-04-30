@@ -27,7 +27,7 @@ if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 
 	if ($tag == 'bps_auto')
 	{
-?>	
+?>
 	<div class="item-list-tabs bps_header">
 	<ul>
 	<li><?php echo $bps_options['header']; ?></li>
@@ -53,14 +53,16 @@ if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 
 	list ($x, $fields) = bps_get_fields ();
 
-echo "<form action='$action' method='post' id='$tag' class='standard-form'>";
+echo "<form action='$action' method='$bps_options[method]' id='$tag' class='standard-form'>";
 
 	$j = 0;
 	foreach ($bps_options['field_name'] as $k => $id)
 	{
 		if (empty ($fields[$id]))  continue;
-	
+
 		$field = $fields[$id];
+		$field_type = apply_filters ('bps_field_html_type', $field->type, $field);
+
 		$label = $bps_options['field_label'][$k];
 		$desc = $bps_options['field_desc'][$k];
 		$range = isset ($bps_options['field_range'][$k]);
@@ -71,33 +73,47 @@ echo "<form action='$action' method='post' id='$tag' class='standard-form'>";
 
 echo "<div class='editfield field_$id field_$name$alt'>";
 
-		if ($range)
+		if (empty ($label))
+			$label = $field->name;
+		else
+echo "<input type='hidden' name='label_$id' value='$label' />";
+
+		if (empty ($desc))
+			$desc = $field->description;
+
+		if (bps_custom_field ($field_type))
 		{
-			list ($min, $max) = bps_minmax ($_POST, $fname, $field->type);
+			$output = "<p>Your HTML code for the <em>$field_type</em> field type goes here</p>";
+			$output = apply_filters ('bps_field_html', $output, $field, $label, $range);
+echo $output;
+		}
+		else if ($range)
+		{
+			list ($min, $max) = bps_minmax ($_REQUEST, $id, $field_type);
 
 echo "<label for='$fname'>$label</label>";
-echo "<input style='width: 10%;' type='text' name='$fname' id='$fname' value='$min' />";
+echo "<input style='width: 10%;' type='text' name='{$fname}_min' id='$fname' value='$min' />";
 echo '&nbsp;-&nbsp;';
 echo "<input style='width: 10%;' type='text' name='{$fname}_max' value='$max' />";
 		}
-		else switch ($field->type)
+		else switch ($field_type)
 		{
 		case 'textbox':
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: '';
 			$value = esc_attr (stripslashes ($posted));
 echo "<label for='$fname'>$label</label>";
 echo "<input type='text' name='$fname' id='$fname' value='$value' />";
 			break;
 
 		case 'number':
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: '';
 			$value = esc_attr (stripslashes ($posted));
 echo "<label for='$fname'>$label</label>";
 echo "<input type='number' name='$fname' id='$fname' value='$value' />";
 			break;
 
 		case 'textarea':
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: '';
 			$value = esc_textarea (stripslashes ($posted));
 echo "<label for='$fname'>$label</label>";
 echo "<textarea rows='5' cols='40' name='$fname' id='$fname'>$value</textarea>";
@@ -106,10 +122,12 @@ echo "<textarea rows='5' cols='40' name='$fname' id='$fname'>$value</textarea>";
 		case 'selectbox':
 echo "<label for='$fname'>$label</label>";
 echo "<select name='$fname' id='$fname'>";
-echo "<option value=''></option>";
+			$selectall = apply_filters ('bps_select_all', '', $field);
+			if (is_string ($selectall))
+echo "<option value='$selectall'></option>";
 
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
-			$options = bps_get_options ($field->id);
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: '';
+			$options = bps_get_options ($id);
 			foreach ($options as $option)
 			{
 				$option = trim ($option);
@@ -124,8 +142,8 @@ echo "</select>";
 echo "<label for='$fname'>$label</label>";
 echo "<select name='{$fname}[]' id='$fname' multiple='multiple'>";
 
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: array ();
-			$options = bps_get_options ($field->id);
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: array ();
+			$options = bps_get_options ($id);
 			foreach ($options as $option)
 			{
 				$option = trim ($option);
@@ -141,8 +159,8 @@ echo "<div class='radio'>";
 echo "<span class='label'>$label</span>";
 echo "<div id='$fname'>";
 
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: '';
-			$options = bps_get_options ($field->id);
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: '';
+			$options = bps_get_options ($id);
 			foreach ($options as $option)
 			{
 				$option = trim ($option);
@@ -159,8 +177,8 @@ echo '</div>';
 echo "<div class='checkbox'>";
 echo "<span class='label'>$label</span>";
 
-			$posted = isset ($_POST[$fname])? $_POST[$fname]: array ();
-			$options = bps_get_options ($field->id);
+			$posted = isset ($_REQUEST[$fname])? $_REQUEST[$fname]: array ();
+			$options = bps_get_options ($id);
 			foreach ($options as $option)
 			{
 				$option = trim ($option);
@@ -172,6 +190,7 @@ echo '</div>';
 			break;
 		}
 
+	if ($desc != '-')
 echo "<p class='description'>$desc</p>";
 echo '</div>';
 	}
@@ -179,6 +198,8 @@ echo '</div>';
 echo "<div class='submit'>";
 echo "<input type='submit' value='". __('Search', 'buddypress'). "' />";
 echo '</div>';
+	if ($bps_options['searchmode'] == 'Partial Match')
+echo "<input type='hidden' name='options[]' value='partial_match' />";
 echo "<input type='hidden' name='bp_profile_search' value='true' />";
 echo '</form>';
 if ($tag != 'bps_auto')  echo '</div>';
@@ -187,67 +208,81 @@ echo "\n<!-- BP Profile Search ". BPS_VERSION. " - end -->\n";
 	return true;
 }
 
-function bps_your_search ()
+function bps_filters ()
 {
-	global $bps_options;
-
-	$posted = $_POST;
+	$posted = $_REQUEST;
+	$done = array ();
+	$filters = '';
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
-	$emptyform = true;
-
-echo '<p class="bps_filters">';
 
 	list ($x, $fields) = bps_get_fields ();
-	foreach ($bps_options['field_name'] as $k => $id)
+	foreach ($posted as $key => $value)
 	{
-		if (empty ($fields[$id]))  continue;
+		if ($value === '')  continue;
+
+		$split = explode ('_', $key);
+		if ($split[0] != 'field')  continue;
+
+		$id = $split[1];
+		$op = isset ($split[2])? $split[2]: 'eq';
+		if (isset ($done[$id]) || empty ($fields[$id]))  continue;
 	
 		$field = $fields[$id];
-		$fname = 'field_'. $id;
-		$label = $bps_options['field_label'][$k];
-		$range = isset ($bps_options['field_range'][$k]);
+		$field_type = apply_filters ('bps_field_criteria_type', $field->type, $field);
+		$field_label = isset ($posted['label_'. $id])? $posted['label_'. $id]: $field->name;
 
-		if ($range)
+		if (bps_custom_field ($field_type))
 		{
-			list ($min, $max) = bps_minmax ($posted, $fname, $field->type);
+			$output = "The search criteria for the <em>$field_type</em> field type go here<br/>\n";
+			$output = apply_filters ('bps_field_criteria', $output, $field, $key, $value, $field_label);
+			$filters .= $output;
+		}
+		else if ($op == 'min' || $op == 'max')
+		{
+			if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
+
+			list ($min, $max) = bps_minmax ($posted, $id, $field_type);
 			if ($min === '' && $max === '')  continue;
 
-			$emptyform = false;
-echo "<strong>$label:</strong>";
+			$filters .= "<strong>$field_label:</strong>";
 			if ($min !== '')
-echo " <strong>". __('min', 'bps'). "</strong> $min";
+				$filters .= " <strong>". __('min', 'bps'). "</strong> $min";
 			if ($max !== '')
-echo " <strong>". __('max', 'bps'). "</strong> $max";
-echo "<br/>";
+				$filters .= " <strong>". __('max', 'bps'). "</strong> $max";
+			$filters .= "<br/>\n";
 		}
-		else
+		else if ($op == 'eq')
 		{
-			if (empty ($posted[$fname]))  continue;
+			if ($field_type == 'datebox')  continue;
 
-			$emptyform = false;
-			switch ($field->type)
+			switch ($field_type)
 			{
 			case 'textbox':
 			case 'number':
 			case 'textarea':
 			case 'selectbox':
 			case 'radio':
-				$value = esc_html (stripslashes ($posted[$fname]));
-echo "<strong>$label:</strong> $value<br/>";
+				$filters .= "<strong>$field_label:</strong> ". esc_html (stripslashes ($value)). "<br/>\n";
 				break;
 
 			case 'multiselectbox':
 			case 'checkbox':
-				$values = stripslashes_deep ($posted[$fname]);
-echo "<strong>$label:</strong> ". esc_html (implode (', ', $values)). "<br/>";
+				$values = $value;
+				$filters .= "<strong>$field_label:</strong> ". esc_html (implode (', ', stripslashes_deep ($values))). "<br/>\n";
 				break;
 			}
 		}
+		else continue;
+
+		$done [$id] = true;
 	}
 
-	if ($emptyform == false)
-echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>";
-echo '</p>';
+	if (count ($done) == 0)  return false;
+
+	echo "\n";
+	echo "<p class='bps_filters'>\n". $filters;
+	echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>\n";
+	echo "</p>\n";
 
 	return true;
 }

@@ -5,11 +5,11 @@ function bps_set_cookie ()
 {
 	global $bps_args;
 
-	if (isset ($_POST['bp_profile_search']))
+	if (isset ($_REQUEST['bp_profile_search']))
 	{
-		$bps_args = apply_filters ('bps_post_data', $_POST);
+		$bps_args = apply_filters ('bps_request_data', $_REQUEST);
 
-		add_action ('bp_before_directory_members_content', 'bps_your_search');
+		add_action ('bp_before_directory_members_content', 'bps_filters');
 		setcookie ('bp-profile-search', serialize ($bps_args), 0, COOKIEPATH);
 	}
 	else if (isset ($_COOKIE['bp-profile-search']))
@@ -22,7 +22,7 @@ function bps_set_cookie ()
 add_action ('wp', 'bps_del_cookie');
 function bps_del_cookie ()
 {
-	if (isset ($_POST['bp_profile_search']))  return false;
+	if (isset ($_REQUEST['bp_profile_search']))  return false;
 
 	if (isset ($_COOKIE['bp-profile-search']))
 	{
@@ -31,10 +31,10 @@ function bps_del_cookie ()
 	}
 }
 
-function bps_minmax ($posted, $index, $type)
+function bps_minmax ($posted, $id, $type)
 {
-	$min = (isset ($posted[$index]) && is_numeric (trim ($posted[$index])))? trim ($posted[$index]): '';
-	$max = (isset ($posted[$index. '_max']) && is_numeric (trim ($posted[$index. '_max'])))? trim ($posted[$index. '_max']): '';
+	$min = (isset ($posted["field_{$id}_min"]) && is_numeric (trim ($posted["field_{$id}_min"])))? trim ($posted["field_{$id}_min"]): '';
+	$max = (isset ($posted["field_{$id}_max"]) && is_numeric (trim ($posted["field_{$id}_max"])))? trim ($posted["field_{$id}_max"]): '';
 
 	if ($type == 'datebox')
 	{
@@ -48,111 +48,109 @@ function bps_minmax ($posted, $index, $type)
 function bps_search ($posted)
 {
 	global $bp, $wpdb;
-	global $bps_options;
 
-	$emptyform = true;
+	$done = array ();
 	$results = array ('users' => array (0), 'validated' => true);
 
 	list ($x, $fields) = bps_get_fields ();
-	foreach ($bps_options['field_name'] as $k => $id)
+	foreach ($posted as $key => $value)
 	{
-		if (empty ($fields[$id]))  continue;
-	
+		if ($value === '')  continue;
+
+		$split = explode ('_', $key);
+		if ($split[0] != 'field')  continue;
+
+		$id = $split[1];
+		$op = isset ($split[2])? $split[2]: 'eq';
+		if (isset ($done[$id]) || empty ($fields[$id]))  continue;
+
 		$field = $fields[$id];
-		$fname = 'field_'. $id;
-		$range = isset ($bps_options['field_range'][$k]);
-		$sql = "SELECT DISTINCT user_id FROM {$bp->profile->table_name_data}";
+		$field_type = apply_filters ('bps_field_query_type', $field->type, $field);
 
-		if ($range)
+		if (bps_custom_field ($field_type))
 		{
-			list ($min, $max) = bps_minmax ($posted, $fname, $field->type);
-			if ($min === '' && $max === '')  continue;
-
-			switch ($field->type)
-			{
-			case 'textbox':
-			case 'number':
-			case 'textarea':
-			case 'selectbox':
-			case 'radio':
-				$sql .= $wpdb->prepare (" WHERE field_id = %d", $id);
-				if ($min !== '')  $sql .= $wpdb->prepare (" AND value >= %f", $min);
-				if ($max !== '')  $sql .= $wpdb->prepare (" AND value <= %f", $max);
-				break;
-
-			case 'multiselectbox':
-			case 'checkbox':
-				continue 2;
-				break;
-
-			case 'datebox':
-				$time = time ();
-				$day = date ("j", $time);
-				$month = date ("n", $time);
-				$year = date ("Y", $time);
-				$ymin = $year - $max - 1;
-				$ymax = $year - $min;
-
-				$sql .= $wpdb->prepare (" WHERE field_id = %d", $id);
-				if ($max !== '')  $sql .= $wpdb->prepare (" AND DATE(value) > %s", "$ymin-$month-$day");
-				if ($min !== '')  $sql .= $wpdb->prepare (" AND DATE(value) <= %s", "$ymax-$month-$day");
-				break;
-			}
+			$found = apply_filters ('bps_field_query', array (), $field, $key, $value);
 		}
 		else
 		{
-			if (empty ($posted[$fname]))  continue;
-
-			switch ($field->type)
+			$sql = $wpdb->prepare ("SELECT user_id FROM {$bp->profile->table_name_data} WHERE field_id = %d ", $id);
+			if ($op == 'min' || $op == 'max')
 			{
-			case 'textbox':
-			case 'number':
-			case 'textarea':
-				$value = $posted[$fname];
-				$escaped = '%'. esc_sql (like_escape ($posted[$fname])). '%';
-				if ($bps_options['searchmode'] == 'Partial Match')
-					$sql .= $wpdb->prepare (" WHERE field_id = %d AND value LIKE %s", $id, $escaped);
-				else					
-					$sql .= $wpdb->prepare (" WHERE field_id = %d AND value = %s", $id, $value);
-				break;
+				if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
 
-			case 'selectbox':
-			case 'radio':
-				$value = $posted[$fname];
-				$sql .= $wpdb->prepare (" WHERE field_id = %d AND value = %s", $id, $value);
-				break;
+				list ($min, $max) = bps_minmax ($posted, $id, $field_type);
+				if ($min === '' && $max === '')  continue;
 
-			case 'multiselectbox':
-			case 'checkbox':
-				$values = $posted[$fname];
-				$sql .= $wpdb->prepare (" WHERE field_id = %d", $id);
-				$like = array ();
-				foreach ($values as $value)
+				switch ($field_type)
 				{
-					$escaped = '%"'. esc_sql (like_escape ($value)). '"%';
-					$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
-				}	
-				$sql .= ' AND ('. implode (' OR ', $like). ')';	
-				break;
+				case 'textbox':
+				case 'number':
+				case 'textarea':
+				case 'selectbox':
+				case 'radio':
+					if ($min !== '')  $sql .= $wpdb->prepare ("AND value >= %f", $min);
+					if ($max !== '')  $sql .= $wpdb->prepare ("AND value <= %f", $max);
+					break;
 
-			case 'datebox':
-				continue 2;
-				break;
+				case 'datebox':
+					$time = time ();
+					$day = date ("j", $time);
+					$month = date ("n", $time);
+					$year = date ("Y", $time);
+					$ymin = $year - $max - 1;
+					$ymax = $year - $min;
+
+					if ($max !== '')  $sql .= $wpdb->prepare ("AND DATE(value) > %s", "$ymin-$month-$day");
+					if ($min !== '')  $sql .= $wpdb->prepare ("AND DATE(value) <= %s", "$ymax-$month-$day");
+					break;
+				}
 			}
+			else if ($op == 'eq')
+			{
+				if ($field_type == 'datebox')  continue;
+
+				switch ($field_type)
+				{
+				case 'textbox':
+				case 'number':
+				case 'textarea':
+					$escaped = '%'. esc_sql (like_escape ($value)). '%';
+					if (in_array ('partial_match', $posted['options']))
+						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
+					else					
+						$sql .= $wpdb->prepare ("AND value = %s", $value);
+					break;
+
+				case 'selectbox':
+				case 'radio':
+					$sql .= $wpdb->prepare ("AND value = %s", $value);
+					break;
+
+				case 'multiselectbox':
+				case 'checkbox':
+					$values = $value;
+					$like = array ();
+					foreach ($values as $value)
+					{
+						$escaped = '%"'. esc_sql (like_escape ($value)). '"%';
+						$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
+					}
+					$sql .= 'AND ('. implode (' OR ', $like). ')';
+					break;
+				}
+			}
+			else continue;
+
+			$found = $wpdb->get_col ($sql);
 		}
 
-		$sql = apply_filters ('bps_field_query', $sql);
-		$found = $wpdb->get_col ($sql);
-		if (!isset ($users)) 
-			$users = $found;
-		else
-			$users = array_intersect ($users, $found);
-
-		$emptyform = false;
+		$users = isset ($users)? array_intersect ($users, $found): $found;
 		if (count ($users) == 0)  return $results;
+
+		$done [$id] = true;
 	}
 
-	if ($emptyform == true)
+	if (count ($done) == 0)
 	{
 		$results['validated'] = false;
 		return $results;
@@ -194,6 +192,7 @@ function bps_user_query ($query)
 			if (count ($users) == 0)  $users = array (0);
 		}
 
+		$users = apply_filters ('bps_results', $users);
 		$query->query_vars['include'] = $users;
 	}
 
