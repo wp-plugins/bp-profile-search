@@ -243,7 +243,7 @@ function bps_get_options ($id)
 
 	if (isset ($options[$id]))  return $options[$id];
 
-	$table = $wpdb->prefix. 'bp_xprofile_fields';
+	$table = $wpdb->base_prefix. 'bp_xprofile_fields';
 	$sql = "SELECT parent_id, name FROM $table WHERE type = 'option' ORDER BY parent_id, option_order";
 	$rows = $wpdb->get_results ($sql);
 
