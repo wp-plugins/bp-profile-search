@@ -10,8 +10,13 @@ Author URI: http://www.dontdream.it/
 
 define ('BPS_VERSION', '3.6.4');
 include 'bps-functions.php';
-if (file_exists (WP_PLUGIN_DIR. '/bps-custom.php'))
-	include WP_PLUGIN_DIR. '/bps-custom.php';
+
+$addons = array ('bps-custom.php');
+foreach ($addons as $addon)
+{
+	$file = WP_PLUGIN_DIR. '/bp-profile-search-addons/'. $addon;
+	if (file_exists ($file))  include $file;
+}
 
 add_action ('plugins_loaded', 'bps_translate');
 function bps_translate ()
