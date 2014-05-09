@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 2.0
-Stable tag: 3.6.4
+Stable tag: 3.6.5
 
 Lets visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -67,6 +67,8 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 3.6.5 =
+* Fixed bug when searching in a *number* profile field type
 = 3.6.4 =
 * Added support for custom profile field types, see [documentation](http://dontdream.it/bp-profile-search/custom-profile-field-types/)
 = 3.6.3 =

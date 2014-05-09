@@ -74,6 +74,8 @@ function bps_search ($posted)
 		else
 		{
 			$sql = $wpdb->prepare ("SELECT user_id FROM {$bp->profile->table_name_data} WHERE field_id = %d ", $id);
+			$sql = apply_filters ('bps_field_sql', $sql, $field);
+
 			if ($op == 'min' || $op == 'max')
 			{
 				if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
@@ -112,13 +114,16 @@ function bps_search ($posted)
 				switch ($field_type)
 				{
 				case 'textbox':
-				case 'number':
 				case 'textarea':
 					$escaped = '%'. esc_sql (like_escape ($value)). '%';
 					if (in_array ('partial_match', $posted['options']))
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else					
 						$sql .= $wpdb->prepare ("AND value = %s", $value);
+					break;
+
+				case 'number':
+					$sql .= $wpdb->prepare ("AND value = %d", $value);
 					break;
 
 				case 'selectbox':
