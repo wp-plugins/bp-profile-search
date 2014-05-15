@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 2.0.1
-Stable tag: 3.6.5
+Stable tag: 3.6.6
 
 Lets visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -18,6 +18,7 @@ When visitors click the *Search* button, they are redirected to your Members Dir
 = Translations =
 
 * Italian (it_IT)
+* French (fr_FR), by Jean-Pierre Michaud
 * Russian (ru_RU), by [Ivan Dyakov](http://olymproject.org/)
 * Serbo-Croatian (sr_RS), by [Borisa Djuraskovic, WebHostingHub](http://www.webhostinghub.com/)
 * Spanish (es_ES), by [Andrew Kurtis, WebHostingHub](http://www.webhostinghub.com/)
@@ -67,6 +68,8 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 3.6.6 =
+* Added French translation
 = 3.6.5 =
 * Fixed bug when searching in a *number* profile field type
 = 3.6.4 =
@@ -91,7 +94,7 @@ After you build your search form, you can display it:
 = 3.5.5 =
 * Fixed the CSS for widget forms and shortcode generated forms
 = 3.5.4 =
-* Added the Serbo-Croatian translation
+* Added Serbo-Croatian translation
 = 3.5.3 =
 * Added Spanish, Russian and Italian translations
 = 3.5.2 =
