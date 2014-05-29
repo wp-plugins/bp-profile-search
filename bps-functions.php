@@ -1,6 +1,6 @@
 <?php
-include 'bps-search.php';
 include 'bps-form.php';
+include 'bps-search.php';
 
 function bps_help ()
 {
@@ -9,13 +9,14 @@ function bps_help ()
 	$title_00 = __('Overview', 'bps');
 	$content_00 = '
 <p>'.
-__('Configure the search form for your Members Directory, then display it:', 'bps'). '
+__('Configure your profile search form, then display it:', 'bps'). '
 <ul>
 <li>'. sprintf (__('In your Members Directory page, selecting the option %s', 'bps'), '<em>'. __('Add to Directory', 'bps'). '</em>'). '</li>
 <li>'. sprintf (__('In a sidebar or widget area, using the widget %s', 'bps'), '<em>'. __('Profile Search', 'bps'). '</em>'). '</li>
-<li>'. sprintf (__('In a post or page, using the shortcode %s', 'bps'), '<strong>[bp_profile_search_form]</strong>'). '</li>
-<li>'. sprintf (__('Anywhere in your theme, using the PHP code %s', 'bps'), "<strong>&lt;?php do_action ('bp_profile_search_form'); ?&gt;</strong>"). '</li>
-</ul>
+<li>'. sprintf (__('In a post or page, using the shortcode %s (*)', 'bps'), '<strong>[bps_display form=ID]</strong>'). '</li>
+<li>'. sprintf (__('Anywhere in your theme, using the PHP code %s (*)', 'bps'), "<strong>&lt;?php do_action ('bps_display_form', ID); ?&gt;</strong>"). '</li>
+</ul>'.
+__('(*) Replace ID with your actual form ID.', 'bps'). '
 </p>';
 
 	$title_01 = __('Form Fields', 'bps');
@@ -30,7 +31,7 @@ __('Select the profile fields to show in your search form.', 'bps'). '
 </ul>'.
 __('Please note:', 'bps'). '
 <ul>
-<li>'. __('To leave a label or description blank, enter a single blank character', 'bps'). '</li>
+<li>'. __('To leave a label or description blank, enter a single dash (-) character', 'bps'). '</li>
 <li>'. __('The <em>Age Range Search</em> option is mandatory for date fields', 'bps'). '</li>
 <li>'. __('The <em>Value Range Search</em> works for numeric fields only', 'bps'). '</li>
 <li>'. __('The <em>Value Range Search</em> is not supported for <em>Multi Select Box</em> and <em>Checkboxes</em> fields', 'bps'). '</li>
@@ -49,18 +50,24 @@ __('Insert your search form in your Members Directory page.', 'bps'). '
 __('If you select <em>Add to Directory: No</em>, the above options are ignored.', 'bps'). '
 </p>';
 
-	$title_03 = __('Text Search Mode', 'bps');
+	$title_03 = __('Form Method', 'bps');
 	$content_03 = '
+<p>'.
+__('Select your form <em>method</em> attribute, POST or GET.', 'bps'). '
+</p>';
+
+	$title_04 = __('Text Search Mode', 'bps');
+	$content_04 = '
 <p>'.
 __('Select your text search mode.', 'bps'). '
 <ul>
-<li>'. __('<em>Partial Match</em>: a search for <em>John</em> finds <em>John</em>, <em>Johnson</em>, <em>Long John Silver</em>, and so on', 'bps'). '</li>
-<li>'. __('<em>Exact Match</em>: a search for <em>John</em> finds <em>John</em> only', 'bps'). '</li>
+<li>'. __('LIKE: a search for <em>John</em> finds <em>John</em>, <em>Johnson</em>, <em>Long John Silver</em>, and so on', 'bps'). '</li>
+<li>'. __('SAME: a search for <em>John</em> finds <em>John</em> only', 'bps'). '</li>
 </ul>'.
 __('In both modes, two wildcard characters are available:', 'bps'). '
 <ul>
-<li>'. __('<em>% (percent sign)</em> matches any text, or no text at all', 'bps'). '</li>
-<li>'. __('<em>_ (underscore)</em> matches any single character', 'bps'). '</li>
+<li>'. __('Percent sign (%): matches any text, or no text at all', 'bps'). '</li>
+<li>'. __('Underscore (_): matches any single character', 'bps'). '</li>
 </ul>
 </p>';
 
@@ -76,6 +83,7 @@ __('In both modes, two wildcard characters are available:', 'bps'). '
 	$screen->add_help_tab (array ('id' => 'bps_01', 'title' => $title_01, 'content' => $content_01));
 	$screen->add_help_tab (array ('id' => 'bps_02', 'title' => $title_02, 'content' => $content_02));
 	$screen->add_help_tab (array ('id' => 'bps_03', 'title' => $title_03, 'content' => $content_03));
+	$screen->add_help_tab (array ('id' => 'bps_04', 'title' => $title_04, 'content' => $content_04));
 
 	$screen->set_help_sidebar ($sidebar);
 
@@ -96,7 +104,7 @@ function bps_admin_js ()
 
 function bps_update_fields ()
 {
-	global $bps_options;
+	$bps_options = array ();
 
 	list ($x, $fields) = bps_get_fields ();
 
@@ -106,7 +114,7 @@ function bps_update_fields ()
 	$bps_options['field_range'] = array ();
 
 	$j = 0;
-	$posted = $_POST['bps_options'];
+	$posted = isset ($_POST['bps_options'])? $_POST['bps_options']: array ();
 	if (isset ($posted['field_name']))  foreach ($posted['field_name'] as $k => $id)
 	{
 		if (empty ($fields[$id]))  continue;
@@ -137,11 +145,13 @@ function bps_update_fields ()
 		if ($bps_options['field_range'][$j] == false)  $bps_options['field_range'][$j] = null;
 		$j = $j + 1;
 	}
+
+	return $bps_options;
 }
 
-function bps_form_fields ()
+function bps_form_fields ($post)
 {
-	global $bps_options;
+	$bps_options = bps_options ($post->ID);
 
 	list ($groups, $fields) = bps_get_fields ();
 	echo '<script>var bps_groups = ['. json_encode ($groups). '];</script>';
@@ -176,7 +186,7 @@ function bps_form_fields ()
 <?php
 	}
 ?>
-		<input type="hidden" id="field_next" value="<?php echo count ($bps_options['field_label']); ?>" />
+		<input type="hidden" id="field_next" value="<?php echo count ($bps_options['field_name']); ?>" />
 	</div>
 	<p><a href="javascript:add_field()"><?php _e('Add Field', 'bps'); ?></a></p>
 <?php
@@ -234,6 +244,18 @@ function bps_get_fields ()
 function bps_custom_field ($type)
 {
 	return !in_array ($type, array ('textbox', 'number', 'textarea', 'selectbox', 'multiselectbox', 'radio', 'checkbox', 'datebox'));
+}
+
+function bps_get_widget ($form)
+{
+	$widgets = get_option ('widget_bps_widget');
+	if ($widgets == false)  return __('unused', 'bps');
+
+	$titles = array ();
+	foreach ($widgets as $key => $widget)
+		if (isset ($widget['form']) && $widget['form'] == $form)  $titles[] = !empty ($widget['title'])? $widget['title']: __('(no title)');
+		
+	return count ($titles)? implode ('<br/>', $titles): __('unused', 'bps');
 }
 
 function bps_get_options ($id)

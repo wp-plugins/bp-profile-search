@@ -3,46 +3,55 @@
 add_action ('bp_before_directory_members_tabs', 'bps_add_form');
 function bps_add_form ()
 {
-	global $bps_options;
+	$args = array (
+		'post_type' => 'bps_form',
+		'orderby' => 'ID',
+		'order' => 'ASC',
+		'nopaging' => true,
+		'meta_query' => array (
+			array ('key' => 'bps_options', 'compare' => 'LIKE', 'value' => 's:9:"directory";s:3:"Yes";')
+		)
+	);
+	$posts = get_posts ($args);
 
-	if ($bps_options['directory'] == 'Yes')  bps_display_form (0, 'bps_auto');
+	foreach ($posts as $post)  bps_display_form ($post->ID, 'bps_auto');
 }
 
-add_action ('bp_profile_search_form', 'bps_display_form');
-function bps_display_form ($name, $tag='bps_action')
+add_action ('bps_display_form', 'bps_display_form');
+function bps_display_form ($form, $mode='bps_action')
 {
-	global $bps_options;
+	$bps_options = bps_options ($form);
 
 	if (empty ($bps_options['field_name']))
 	{
-		printf ('<p class="bps_error">'. __('%s: Error, you have not configured your search form.', 'bps'). '</p>',
-			'<strong>BP Profile Search '. BPS_VERSION. '</strong>');
+		printf ('<p class="bps_error">'. __('%s: Form %d was not found, or has no fields.', 'bps'). '</p>',
+			'<strong>BP Profile Search '. BPS_VERSION. '</strong>', $form);
 		return false;
 	}
 
 	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
 
 echo "\n<!-- BP Profile Search ". BPS_VERSION. " - start -->\n";
-if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
+if ($mode != 'bps_auto')  echo "<div id='buddypress'>";
 
-	if ($tag == 'bps_auto')
+	if ($mode == 'bps_auto')
 	{
 ?>
 	<div class="item-list-tabs bps_header">
 	<ul>
 	<li><?php echo $bps_options['header']; ?></li>
-<?php if (in_array ('Enabled', $bps_options['show'])) { ?>
+<?php if ($bps_options['toggle'] == 'Enabled') { ?>
 	<li class="last">
-	<input id="bps_show" type="submit" value="<?php echo $bps_options['message']; ?>" />
+	<input id="bps_toggle<?php echo $form; ?>" type="submit" value="<?php echo $bps_options['button']; ?>" />
 	</li>
 <?php } ?>
 	</ul>
-<?php if (in_array ('Enabled', $bps_options['show'])) { ?>
+<?php if ($bps_options['toggle'] == 'Enabled') { ?>
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
-		$('#<?php echo $tag; ?>').hide();
-		$('#bps_show').click(function(){
-			$('#<?php echo $tag; ?>').toggle();
+		$('#<?php echo "$mode$form"; ?>').hide();
+		$('#bps_toggle<?php echo $form; ?>').click(function(){
+			$('#<?php echo "$mode$form"; ?>').toggle();
 		});
 	});
 </script>
@@ -53,7 +62,7 @@ if ($tag != 'bps_auto')  echo "<div id='buddypress'>";
 
 	list ($x, $fields) = bps_get_fields ();
 
-echo "<form action='$action' method='$bps_options[method]' id='$tag' class='standard-form'>";
+echo "<form action='$action' method='$bps_options[method]' id='$mode$form' class='standard-form'>";
 
 	$j = 0;
 	foreach ($bps_options['field_name'] as $k => $id)
@@ -198,92 +207,93 @@ echo '</div>';
 echo "<div class='submit'>";
 echo "<input type='submit' value='". __('Search', 'buddypress'). "' />";
 echo '</div>';
-	if ($bps_options['searchmode'] == 'Partial Match')
-echo "<input type='hidden' name='options[]' value='partial_match' />";
-echo "<input type='hidden' name='bp_profile_search' value='true' />";
+	if ($bps_options['searchmode'] == 'LIKE')
+echo "<input type='hidden' name='options[]' value='like' />";
+echo "<input type='hidden' name='bp_profile_search' value='$form' />";
 echo '</form>';
-if ($tag != 'bps_auto')  echo '</div>';
+if ($mode != 'bps_auto')  echo '</div>';
 echo "\n<!-- BP Profile Search ". BPS_VERSION. " - end -->\n";
 
 	return true;
 }
 
-function bps_filters ()
+add_shortcode ('bps_display', 'bps_shortcode');
+function bps_shortcode ($attr, $content)
 {
-	$posted = $_REQUEST;
-	$done = array ();
-	$filters = '';
-	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
+	ob_start ();
+	bps_display_form ($attr['form'], 'bps_shortcode');
+	return ob_get_clean ();
+}
 
-	list ($x, $fields) = bps_get_fields ();
-	foreach ($posted as $key => $value)
+class bps_widget extends WP_Widget
+{
+	function bps_widget ()
 	{
-		if ($value === '')  continue;
-
-		$split = explode ('_', $key);
-		if ($split[0] != 'field')  continue;
-
-		$id = $split[1];
-		$op = isset ($split[2])? $split[2]: 'eq';
-		if (isset ($done[$id]) || empty ($fields[$id]))  continue;
-	
-		$field = $fields[$id];
-		$field_type = apply_filters ('bps_field_criteria_type', $field->type, $field);
-		$field_label = isset ($posted['label_'. $id])? $posted['label_'. $id]: $field->name;
-
-		if (bps_custom_field ($field_type))
-		{
-			$output = "The search criteria for the <em>$field_type</em> field type go here<br/>\n";
-			$output = apply_filters ('bps_field_criteria', $output, $field, $key, $value, $field_label);
-			$filters .= $output;
-		}
-		else if ($op == 'min' || $op == 'max')
-		{
-			if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
-
-			list ($min, $max) = bps_minmax ($posted, $id, $field_type);
-			if ($min === '' && $max === '')  continue;
-
-			$filters .= "<strong>$field_label:</strong>";
-			if ($min !== '')
-				$filters .= " <strong>". __('min', 'bps'). "</strong> $min";
-			if ($max !== '')
-				$filters .= " <strong>". __('max', 'bps'). "</strong> $max";
-			$filters .= "<br/>\n";
-		}
-		else if ($op == 'eq')
-		{
-			if ($field_type == 'datebox')  continue;
-
-			switch ($field_type)
-			{
-			case 'textbox':
-			case 'number':
-			case 'textarea':
-			case 'selectbox':
-			case 'radio':
-				$filters .= "<strong>$field_label:</strong> ". esc_html (stripslashes ($value)). "<br/>\n";
-				break;
-
-			case 'multiselectbox':
-			case 'checkbox':
-				$values = $value;
-				$filters .= "<strong>$field_label:</strong> ". esc_html (implode (', ', stripslashes_deep ($values))). "<br/>\n";
-				break;
-			}
-		}
-		else continue;
-
-		$done [$id] = true;
+		$widget_ops = array ('description' => __('A Profile Search form.', 'bps'));
+		$this->WP_Widget ('bps_widget', __('Profile Search', 'bps'), $widget_ops);
 	}
 
-	if (count ($done) == 0)  return false;
+	function widget ($args, $instance)
+	{
+		extract ($args);
+		$title = apply_filters ('widget_title', $instance['title']);
+		$form = $instance['form'];
 
-	echo "\n";
-	echo "<p class='bps_filters'>\n". $filters;
-	echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>\n";
-	echo "</p>\n";
+		echo $before_widget;
+		if ($title)
+			echo $before_title. $title. $after_title;
+		bps_display_form ($form, 'bps_widget');
+		echo $after_widget;
+	}
 
-	return true;
+	function update ($new_instance, $old_instance)
+	{
+		$instance = $old_instance;
+		$instance['title'] = $new_instance['title'];
+		$instance['form'] = $new_instance['form'];
+		return $instance;
+	}
+
+	function form ($instance)
+	{
+		$title = isset ($instance['title'])? $instance['title']: '';
+		$form = isset ($instance['form'])? $instance['form']: '';
+?>
+	<p>
+		<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e('Title:', 'bps'); ?></label>
+		<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
+	</p>
+	<p>
+		<label for="<?php echo $this->get_field_id ('form'); ?>"><?php _e('Form:', 'bps'); ?></label>
+<?php
+		$posts = get_posts (array ('post_type' => 'bps_form', 'orderby' => 'ID', 'order' => 'ASC', 'nopaging' => true));
+		if (count ($posts))
+		{
+			echo "<select class='widefat' id='{$this->get_field_id ('form')}' name='{$this->get_field_name ('form')}'>";
+			foreach ($posts as $post)
+			{
+				$id = $post->ID;
+				$name = !empty ($post->post_title)? $post->post_title: __('(no title)');
+				echo "<option value='$id'";
+				if ($id == $form)  echo " selected='selected'";
+				echo ">$name &nbsp;</option>\n";
+			}
+			echo "</select>";
+		}
+		else
+		{
+			echo '<br/>';
+			_e('You have not created any form yet.', 'bps');
+		}
+?>
+	</p>
+<?php
+	}
+}
+
+add_action ('widgets_init', 'bps_widget_init');
+function bps_widget_init ()
+{
+	register_widget ('bps_widget');
 }
 ?>

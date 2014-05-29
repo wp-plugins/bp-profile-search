@@ -3,12 +3,14 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search your BuddyPress Members Directory.
-Version: 3.6.6
+Version: 4.0
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
+Text Domain: bps
+Domain Path: /languages
 */
 
-define ('BPS_VERSION', '3.6.6');
+define ('BPS_VERSION', '4.0');
 include 'bps-functions.php';
 
 $addons = array ('bps-custom.php');
@@ -24,245 +26,268 @@ function bps_translate ()
 	load_plugin_textdomain ('bps', false, basename (dirname (__FILE__)). '/languages');
 }
 
-add_action ('init', 'bps_init');
-function bps_init ()
-{
-	global $bps_options;
-
-	$bps_options = bps_active_for_network ()? get_site_option ('bps_options'): get_option ('bps_options');
-
-	if (empty ($bps_options['version']))  bps_init_form ();
-	if (empty ($bps_options['method']))  $bps_options['method'] = 'POST';
-
-	return true;
-}
-
-function bps_active_for_network ()
-{
-	include_once ABSPATH. '/wp-admin/includes/plugin.php';
-	return is_plugin_active_for_network ('bp-profile-search/bps-main.php');
-}
-
-function bps_admin_url ($tab=false)
-{
-	$page = 'users.php?page=bp-profile-search';
-	if ($tab)  $page .= '&tab='. $tab;
-
-	$url = bps_active_for_network ()? network_admin_url ($page): admin_url ($page);
-	return $url;
-}
-
-add_action (bps_active_for_network ()? 'network_admin_menu': 'admin_menu', 'bps_add_pages', 20);
-function bps_add_pages ()
-{
-	$page = add_submenu_page ('users.php', __('Profile Search', 'bps'), __('Profile Search', 'bps'), 'manage_options', 'bp-profile-search', 'bps_admin');
-	add_action ('load-'. $page, 'bps_help');
-	add_action ('load-'. $page, 'bps_admin_js');
-
-	return true;
-}
-
-add_filter (bps_active_for_network ()? 'network_admin_plugin_action_links': 'plugin_action_links', 'bps_row_meta', 10, 2);
+add_filter ('plugin_action_links', 'bps_row_meta', 10, 2);
 function bps_row_meta ($links, $file)
 {
 	if ($file == plugin_basename (__FILE__))
 	{
-		$settings_link = '<a href="'. bps_admin_url (). '">'. __('Settings', 'buddypress'). '</a>';
+		$settings_link = '<a href="'. admin_url ('edit.php?post_type=bps_form'). '">'. __('Settings', 'buddypress'). '</a>';
 		array_unshift ($links, $settings_link);
 	}
 	return $links;
 }
 
-function bps_init_form ()
+function bps_options ($form)
 {
-	global $bps_options;
+	static $options;
+	if (isset ($options[$form]))  return $options[$form];
 
-	$bps_options = array ();
-	$bps_options['version'] = BPS_VERSION;
-	$bps_options['field_name'] = array ();
-	$bps_options['field_label'] = array ();
-	$bps_options['field_desc'] = array ();
-	$bps_options['field_range'] = array ();
-	$bps_options['directory'] = 'No';
-	$bps_options['header'] = __('<h4>Advanced Search</h4>', 'bps');
-	$bps_options['show'] = array ('Enabled');
-	$bps_options['message'] = __('Toggle Form', 'bps');
-	$bps_options['searchmode'] = 'Partial Match';
-	$bps_options['method'] = 'POST';
+	$default = array ();
+	$default['field_name'] = array ();
+	$default['field_label'] = array ();
+	$default['field_desc'] = array ();
+	$default['field_range'] = array ();
+	$default['directory'] = 'No';
+	$default['header'] = __('<h4>Advanced Search</h4>', 'bps');
+	$default['toggle'] = 'Enabled';
+	$default['button'] = __('Toggle Form', 'bps');
+	$default['method'] = 'POST';
+	$default['searchmode'] = 'LIKE';
 
+	if (get_post_status ($form) == 'publish')  $meta = get_post_meta ($form);
+
+	$options[$form] = isset ($meta['bps_options'])? unserialize ($meta['bps_options'][0]): $default;
+	return $options[$form];
+}
+
+add_action ('init', 'bps_post_type');
+function bps_post_type ()
+{
+	$args = array
+	(
+		'labels' => array
+		(
+			'name' => __('Profile Search Forms', 'bps'),
+			'singular_name' => __('Profile Search Form', 'bps'),
+			'all_items' => __('Profile Search', 'bps'),
+			'add_new' => __('Add New', 'bps'),
+			'add_new_item' => __('Add New Form', 'bps'),
+			'edit_item' => __('Edit Form', 'bps'),
+			'not_found' => __('No forms found.', 'bps'),
+			'not_found_in_trash' => __('No forms found in Trash.', 'bps'),
+		),
+		'show_ui' => true,
+		'show_in_menu' => 'users.php',
+		'supports' => array ('title'),
+		'rewrite' => false,
+		'query_var' => false,
+	);
+
+	register_post_type ('bps_form', $args);
+}
+
+/******* edit.php */
+
+add_filter ('manage_bps_form_posts_columns', 'bps_add_columns');
+// file class-wp-posts-list-table.php
+function bps_add_columns ($columns)
+{
+	return array
+	(
+		'cb' => '<input type="checkbox" />',
+		'title' => __('Form', 'bps'),
+		'fields' => __('Fields', 'bps'),
+		'directory' => __('Add to Directory', 'bps'),
+		'widget' => __('Widget', 'bps'),
+		'shortcode' => __('Shortcode', 'bps'),
+	);
+}
+
+add_action ('manage_posts_custom_column', 'bps_columns', 10, 2);
+// file class-wp-posts-list-table.php line 675
+function bps_columns ($column, $post_id)
+{
+	if (!bps_form ())  return;
+
+	$options = bps_options ($post_id);
+	if ($column == 'fields')  echo count ($options['field_name']);
+	else if ($column == 'directory')  echo $options['directory'];
+	else if ($column == 'widget')  echo bps_get_widget ($post_id);
+	else if ($column == 'shortcode')  echo "[bps_display form=$post_id]";
+}
+
+add_filter ('bulk_actions-edit-bps_form', 'bps_bulk_actions');
+// file class-wp-list-table.php
+function bps_bulk_actions ($actions)
+{
+	$actions = array ();
+	$actions['trash'] = __('Move to Trash');
+	$actions['untrash'] = __('Restore');
+	$actions['delete'] = __('Delete Permanently');
+
+	return $actions;
+}
+
+add_filter ('post_row_actions', 'bps_row_actions', 10, 2);
+// file class-wp-posts-list-table.php
+function bps_row_actions ($actions, $post)
+{
+	if (!bps_form ())  return $actions;
+
+	unset ($actions['inline hide-if-no-js']);
+	return $actions;
+}
+
+add_filter ('manage_edit-bps_form_sortable_columns', 'bps_sortable');
+// file class-wp-list-table.php
+function bps_sortable ($columns)
+{
+	return array ('title' => 'title');
+}
+
+add_filter ('request', 'bps_orderby');
+function bps_orderby ($vars)
+{
+	if (!bps_form ())  return $vars;
+	if (isset ($vars['orderby']))  return $vars;
+	
+	$vars['orderby'] = 'ID';
+	$vars['order'] = 'ASC';
+	return $vars;
+}
+
+/******* post.php, post-new.php */
+
+add_action ('add_meta_boxes', 'bps_add_meta_boxes');
+function bps_add_meta_boxes ()
+{
+	add_meta_box ('bps_form_fields', __('Form Fields', 'bps'), 'bps_form_fields', 'bps_form', 'normal');
+	add_meta_box ('bps_directory', __('Add to Directory', 'bps'), 'bps_directory', 'bps_form', 'side');
+	add_meta_box ('bps_method', __('Form Method', 'bps'), 'bps_method', 'bps_form', 'side');
+	add_meta_box ('bps_searchmode', __('Text Search Mode', 'bps'), 'bps_searchmode', 'bps_form', 'side');
+}
+
+function bps_directory ($post)
+{
+	$options = bps_options ($post->ID);
+?>
+	<label for="directory"><?php _e('Add to Directory', 'bps'); ?></label><br/>
+	<select name="options[directory]" id="directory">
+		<option value='Yes' <?php selected ($options['directory'], 'Yes'); ?>><?php _e('Yes', 'bps'); ?></option>
+		<option value='No' <?php selected ($options['directory'], 'No'); ?>><?php _e('No', 'bps'); ?></option>
+	</select>
+	<br/>
+	<label for="header"><?php _e('Form Header', 'bps'); ?></label><br/>
+	<textarea name="options[header]" id="header" class="large-text code" rows="4"><?php echo $options['header']; ?></textarea>
+	<br/>
+	<label for="toggle"><?php _e('Toggle Form', 'bps'); ?></label><br/>
+	<select name="options[toggle]" id="toggle">
+		<option value='Enabled' <?php selected ($options['toggle'], 'Enabled'); ?>><?php _e('Enabled', 'bps'); ?></option>
+		<option value='Disabled' <?php selected ($options['toggle'], 'Disabled'); ?>><?php _e('Disabled', 'bps'); ?></option>
+	</select>
+	<br/>
+	<label for="button"><?php _e('Toggle Form Button', 'bps'); ?></label><br/>
+	<input type="text" name="options[button]" id="button" value="<?php echo $options['button']; ?>" />
+<?php
+}
+
+function bps_method ($post)
+{
+	$options = bps_options ($post->ID);
+?>
+	<select name="options[method]" id="method">
+		<option value='POST' <?php selected ($options['method'], 'POST'); ?>><?php _e('POST', 'bps'); ?></option>
+		<option value='GET' <?php selected ($options['method'], 'GET'); ?>><?php _e('GET', 'bps'); ?></option>
+	</select>
+<?php
+}
+
+function bps_searchmode ($post)
+{
+	$options = bps_options ($post->ID);
+?>
+	<select name="options[searchmode]" id="searchmode">
+		<option value='LIKE' <?php selected ($options['searchmode'], 'LIKE'); ?>><?php _e('LIKE', 'bps'); ?></option>
+		<option value='EQUAL' <?php selected ($options['searchmode'], 'EQUAL'); ?>><?php _e('SAME', 'bps'); ?></option>
+	</select>
+<?php
+}
+
+add_action ('save_post', 'bps_save_post', 10, 2);
+function bps_save_post ($post_id, $post)
+{
+	if ($post->post_type != 'bps_form')  return false;
+	if ($post->post_status != 'publish')  return false;
+	if (empty ($_POST['options']) && empty ($_POST['bps_options']))  return false;
+
+	$options = bps_update_fields ();
+	foreach (array ('directory', 'header', 'toggle', 'button', 'method', 'searchmode') as $key)
+		$options[$key] = stripslashes ($_POST['options'][$key]);
+
+	update_post_meta ($post_id, 'bps_options', $options);
 	return true;
 }
 
-function bps_admin ()
+add_filter ('post_updated_messages', 'bps_updated_messages');
+function bps_updated_messages ($messages)
 {
-	$tabs = array ('main' => __('Form Configuration', 'bps'), 'options' => __('Advanced Options', 'bps'));
-	$tab = (isset ($_GET['tab']) && isset ($tabs[$_GET['tab']]))? $_GET['tab']: 'main';
-?>
-
-<div class="wrap">
-  <h2><?php _e('Profile Search', 'bps'); ?></h2>
-
-  <ul class="subsubsub">
-<?php
-	foreach ($tabs as $action => $text)
-	{
-		$sep = (end ($tabs) != $text)? ' | ' : '';
-		$class = ($action == $tab)? ' class="current"' : '';
-		$href = bps_admin_url ($action);
-		echo "\t\t<li><a href='$href'$class>$text</a>$sep</li>\n";
-	}
-?>
-  </ul>
-  <br class="clear" />
-
-<?php
-	$function = 'bps_admin_'. $tab;
-	$function ();
-?>
-</div>
-<?php
+	$messages['bps_form'] = array
+	(
+		 0 => 'message 0',
+		 1 => __('Form updated.', 'bps'),
+		 2 => 'message 2',
+		 3 => 'message 3',
+		 4 => 'message 4',
+		 5 => 'message 5',
+		 6 => __('Form created.', 'bps'),
+		 7 => 'message 7',
+		 8 => 'message 8',
+		 9 => 'message 9',
+		10 => 'message 10',
+	);
+	return $messages;
 }
 
-function bps_admin_main ()
+add_filter ('bulk_post_updated_messages', 'bps_bulk_updated_messages', 10, 2);
+function bps_bulk_updated_messages ($bulk_messages, $bulk_counts)
 {
-	global $bps_options;
+	$bulk_messages['bps_form'] = array
+	(
+		'updated'   => 'updated',
+		'locked'    => 'locked',
+		'deleted'   => _n('%s form permanently deleted.', '%s forms permanently deleted.', $bulk_counts['deleted']),
+		'trashed'   => _n('%s form moved to the Trash.', '%s forms moved to the Trash.', $bulk_counts['trashed']),
+		'untrashed' => _n('%s form restored from the Trash.', '%s forms restored from the Trash.', $bulk_counts['untrashed']),
+	);
+	return $bulk_messages;
+}
 
-	if (isset ($_POST['action']) && $_POST['action'] == 'update')
-	{
-		bps_update_fields ();
-		$message = bps_update_form (array ('directory', 'header', 'message'), array ('show'));
-	}	
+/******* common */
+
+function bps_form ()
+{
+	global $current_screen;
+	return isset ($current_screen->post_type) && $current_screen->post_type == 'bps_form';
+}
+
+add_action ('admin_head', 'bps_css');
+function bps_css ()
+{
+	global $current_screen;
+	if (!bps_form ())  return;
+
+	bps_help ();
+	if ($current_screen->id == 'bps_form')  bps_admin_js ();
 ?>
-
-<?php if (isset ($message)) : ?>
-  <div id="message" class="updated fade"><p><?php echo $message; ?></p></div>
-<?php endif; ?>
-
-  <form method="post" action="<?php echo bps_admin_url ('main'); ?>">
-	<?php wp_nonce_field ('bps_admin_main'); ?>
-	<input type="hidden" name="action" value="update" />
-
-	<h3><?php _e('Form Fields', 'bps'); ?></h3>
-
-	<p>
-	<?php _e('Select the profile fields to show in your search form.', 'bps'); ?>
-	<?php _e('Click the <em>Help</em> tab for more information.', 'bps'); ?>
-	</p>
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row"><?php _e('Form Fields:', 'bps'); ?></th><td>
-		<?php bps_form_fields (); ?>
-	</td></tr>
-	</table>
-
-	<h3><?php _e('Add to Directory', 'bps'); ?></h3>
-
-	<p><?php _e('Insert your search form in your Members Directory page.', 'bps'); ?></p>
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row"><?php _e('Add to Directory:', 'bps'); ?></th><td>
-	<fieldset>
-		<label><input type="radio" name="bps_options[directory]" value="Yes"<?php if ('Yes' == $bps_options['directory']) echo ' checked="checked"'; ?> /> <span><?php _e('Yes', 'bps'); ?></span></label><br />
-		<label><input type="radio" name="bps_options[directory]" value="No"<?php if ('No' == $bps_options['directory']) echo ' checked="checked"'; ?> /> <span><?php _e('No', 'bps'); ?></span></label><br />
-	</fieldset>
-	</td></tr>
-	<tr valign="top"><th scope="row"><?php _e('Form Header:', 'bps'); ?></th><td>
-		<textarea name="bps_options[header]" class="large-text code" rows="4"><?php echo $bps_options['header']; ?></textarea>
-	</td></tr>
-	<tr valign="top"><th scope="row"><?php _e('Toggle Form:', 'bps'); ?></th><td>
-		<label><input type="checkbox" name="bps_options[show][]" value="Enabled"<?php if (in_array ('Enabled', $bps_options['show'])) echo ' checked="checked"'; ?> /> <?php _e('Enabled', 'bps'); ?></label><br />
-	</td></tr>
-	<tr valign="top"><th scope="row"><?php _e('Toggle Form Button:', 'bps'); ?></th><td>
-		<input type="text" name="bps_options[message]" value="<?php echo $bps_options['message']; ?>"  />
-	</td></tr>
-	</table>
-
-	<p class="submit">
-	  <input type="submit" class="button-primary" value="<?php _e('Save Settings', 'bps'); ?>" />
-	</p>
-  </form>
-
+	<style type="text/css">
+		.search-box, .actions, .view-switch {display: none;}
+		.bulkactions {display: block;}
+		#minor-publishing {display: none;}
+		.fixed .column-fields {width: 10%;}
+		.fixed .column-directory {width: 16%;}
+		.fixed .column-widget {width: 16%;}
+		.fixed .column-shortcode {width: 20%;}
+	</style>
 <?php
-}
-
-function bps_admin_options ()
-{
-	global $bps_options;
-
-	if (isset ($_POST['action']) && $_POST['action'] == 'update')
-		$message = bps_update_form (array ('searchmode'), array ());
-?>
-
-<?php if (isset ($message)) : ?>
-  <div id="message" class="updated fade"><p><?php echo $message; ?></p></div>
-<?php endif; ?>
-
-  <form method="post" action="<?php echo bps_admin_url ('options'); ?>">
-	<?php wp_nonce_field ('bps_admin_options'); ?>
-	<input type="hidden" name="action" value="update" />
-	
-	<h3><?php _e('Text Search Mode', 'bps'); ?></h3>
-
-	<p>
-	<?php _e('Select your text search mode.', 'bps'); ?>
-	<?php _e('Click the <em>Help</em> tab for more information.', 'bps'); ?>
-	</p>
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row"><?php _e('Text Search Mode:', 'bps'); ?></th><td>
-	<fieldset>
-		<label><input type="radio" name="bps_options[searchmode]" value="Partial Match"<?php if ('Partial Match' == $bps_options['searchmode']) echo ' checked="checked"'; ?> /> <span><?php _e('Partial Match', 'bps'); ?></span></label><br />
-		<label><input type="radio" name="bps_options[searchmode]" value="Exact Match"<?php if ('Exact Match' == $bps_options['searchmode']) echo ' checked="checked"'; ?> /> <span><?php _e('Exact Match', 'bps'); ?></span></label><br />
-	</fieldset>
-	</td></tr>
-	</table>
-
-	<!-- h3><?php _e('Form Submission Method', 'bps'); ?></h3>
-
-	<p>
-	<?php _e('Select POST or GET to submit your form.', 'bps'); ?>
-	</p>
-
-	<table class="form-table">
-	<tr valign="top"><th scope="row"><?php _e('Form Submission Method:', 'bps'); ?></th><td>
-	<fieldset>
-		<label><input type="radio" name="bps_options[method]" value="POST"<?php if ('POST' == $bps_options['method']) echo ' checked="checked"'; ?> /> <span><?php _e('POST', 'bps'); ?></span></label><br />
-		<label><input type="radio" name="bps_options[method]" value="GET"<?php if ('GET' == $bps_options['method']) echo ' checked="checked"'; ?> /> <span><?php _e('GET', 'bps'); ?></span></label><br />
-	</fieldset>
-	</td></tr>
-	</table -->
-
-	<p class="submit">
-	  <input type="submit" class="button-primary" value="<?php _e('Save Settings', 'bps'); ?>" />
-	</p>
-  </form>
-
-<?php
-}
-
-function bps_update_form ($vars, $arrays)
-{
-	global $bps_options;
-
-	foreach ($vars as $var)
-		$bps_options[$var] = stripslashes ($_POST['bps_options'][$var]);
-
-	foreach ($arrays as $array)
-		if (isset ($_POST['bps_options'][$array]))
-			$bps_options[$array] = stripslashes_deep ($_POST['bps_options'][$array]);
-		else
-			$bps_options[$array] = array ();
-
-	bps_active_for_network ()? update_site_option ('bps_options', $bps_options): update_option ('bps_options', $bps_options);
-
-	return __('Settings saved.', 'bps');
-}
-
-function bps_whereami ()
-{
-	if (is_admin ())
-		return defined ('DOING_AJAX')? 'ajax': 'admin';
-
-	return 'frontend';		
 }
 ?>

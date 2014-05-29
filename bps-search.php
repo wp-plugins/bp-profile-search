@@ -45,6 +45,87 @@ function bps_minmax ($posted, $id, $type)
 	return array ($min, $max);
 }
 
+function bps_filters ()
+{
+	global $bps_args;
+
+	$posted = $bps_args;
+	$done = array ();
+	$filters = '';
+	$action = bp_get_root_domain (). '/'. bp_get_members_root_slug (). '/';
+
+	list ($x, $fields) = bps_get_fields ();
+	foreach ($posted as $key => $value)
+	{
+		if ($value === '')  continue;
+
+		$split = explode ('_', $key);
+		if ($split[0] != 'field')  continue;
+
+		$id = $split[1];
+		$op = isset ($split[2])? $split[2]: 'eq';
+		if (isset ($done[$id]) || empty ($fields[$id]))  continue;
+	
+		$field = $fields[$id];
+		$field_type = apply_filters ('bps_field_criteria_type', $field->type, $field);
+		$field_label = isset ($posted['label_'. $id])? $posted['label_'. $id]: $field->name;
+
+		if (bps_custom_field ($field_type))
+		{
+			$output = "The search criteria for the <em>$field_type</em> field type go here<br/>\n";
+			$output = apply_filters ('bps_field_criteria', $output, $field, $key, $value, $field_label);
+			$filters .= $output;
+		}
+		else if ($op == 'min' || $op == 'max')
+		{
+			if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
+
+			list ($min, $max) = bps_minmax ($posted, $id, $field_type);
+			if ($min === '' && $max === '')  continue;
+
+			$filters .= "<strong>$field_label:</strong>";
+			if ($min !== '')
+				$filters .= " <strong>". __('min', 'bps'). "</strong> $min";
+			if ($max !== '')
+				$filters .= " <strong>". __('max', 'bps'). "</strong> $max";
+			$filters .= "<br/>\n";
+		}
+		else if ($op == 'eq')
+		{
+			if ($field_type == 'datebox')  continue;
+
+			switch ($field_type)
+			{
+			case 'textbox':
+			case 'number':
+			case 'textarea':
+			case 'selectbox':
+			case 'radio':
+				$filters .= "<strong>$field_label:</strong> ". esc_html (stripslashes ($value)). "<br/>\n";
+				break;
+
+			case 'multiselectbox':
+			case 'checkbox':
+				$values = $value;
+				$filters .= "<strong>$field_label:</strong> ". esc_html (implode (', ', stripslashes_deep ($values))). "<br/>\n";
+				break;
+			}
+		}
+		else continue;
+
+		$done [$id] = true;
+	}
+
+	if (count ($done) == 0)  return false;
+
+	echo "\n";
+	echo "<p class='bps_filters'>\n". $filters;
+	echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>\n";
+	echo "</p>\n";
+
+	return true;
+}
+
 function bps_search ($posted)
 {
 	global $bp, $wpdb;
@@ -116,7 +197,7 @@ function bps_search ($posted)
 				case 'textbox':
 				case 'textarea':
 					$escaped = '%'. esc_sql (like_escape ($value)). '%';
-					if (in_array ('partial_match', $posted['options']))
+					if (in_array ('like', $posted['options']))
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else					
 						$sql .= $wpdb->prepare ("AND value = %s", $value);
@@ -202,58 +283,5 @@ function bps_user_query ($query)
 	}
 
 	return $query;
-}
-
-add_shortcode ('bp_profile_search_form', 'bps_shortcode');
-function bps_shortcode ($attr, $content)
-{
-	ob_start ();
-	bps_display_form (0, 'bps_shortcode');
-	return ob_get_clean ();
-}
-
-class bps_widget extends WP_Widget
-{
-	function bps_widget ()
-	{
-		$widget_ops = array ('description' => __('Your Profile Search form.', 'bps'));
-		$this->WP_Widget ('bp_profile_search', __('Profile Search', 'bps'), $widget_ops);
-	}
-
-	function widget ($args, $instance)
-	{
-		extract ($args);
-		$title = apply_filters ('widget_title', $instance['title']);
-	
-		echo $before_widget;
-		if ($title)
-			echo $before_title. $title. $after_title;
-		bps_display_form (0, 'bps_widget');
-		echo $after_widget;
-	}
-
-	function update ($new_instance, $old_instance)
-	{
-		$instance = $old_instance;
-		$instance['title'] = $new_instance['title'];
-		return $instance;
-	}
-
-	function form ($instance)
-	{
-		$title = $instance['title'];
-?>
-<p>
-	<label for="<?php echo $this->get_field_id ('title'); ?>"><?php _e('Title:', 'bps'); ?></label>
-	<input class="widefat" id="<?php echo $this->get_field_id ('title'); ?>" name="<?php echo $this->get_field_name ('title'); ?>" type="text" value="<?php echo esc_attr ($title); ?>" />
-</p>
-<?php
-	}
-}
-
-add_action ('widgets_init', 'bps_widget_init');
-function bps_widget_init ()
-{
-	register_widget ('bps_widget');
 }
 ?>
