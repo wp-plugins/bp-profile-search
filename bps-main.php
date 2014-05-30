@@ -111,7 +111,7 @@ function bps_columns ($column, $post_id)
 
 	$options = bps_options ($post_id);
 	if ($column == 'fields')  echo count ($options['field_name']);
-	else if ($column == 'directory')  echo $options['directory'];
+	else if ($column == 'directory')  _e($options['directory'], 'bps');
 	else if ($column == 'widget')  echo bps_get_widget ($post_id);
 	else if ($column == 'shortcode')  echo "[bps_display form=$post_id]";
 }
@@ -255,9 +255,9 @@ function bps_bulk_updated_messages ($bulk_messages, $bulk_counts)
 	(
 		'updated'   => 'updated',
 		'locked'    => 'locked',
-		'deleted'   => _n('%s form permanently deleted.', '%s forms permanently deleted.', $bulk_counts['deleted']),
-		'trashed'   => _n('%s form moved to the Trash.', '%s forms moved to the Trash.', $bulk_counts['trashed']),
-		'untrashed' => _n('%s form restored from the Trash.', '%s forms restored from the Trash.', $bulk_counts['untrashed']),
+		'deleted'   => _n('%s form permanently deleted.', '%s forms permanently deleted.', $bulk_counts['deleted'], 'bps'),
+		'trashed'   => _n('%s form moved to the Trash.', '%s forms moved to the Trash.', $bulk_counts['trashed'], 'bps'),
+		'untrashed' => _n('%s form restored from the Trash.', '%s forms restored from the Trash.', $bulk_counts['untrashed'], 'bps'),
 	);
 	return $bulk_messages;
 }

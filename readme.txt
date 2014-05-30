@@ -79,6 +79,7 @@ After you build your search form, you can display it:
 = 4.0 =
 * Added ability to handle multiple forms
 * Added selection of the form submission method
+* Updated Italian translation
 Note: This version is not compatible with earlier versions.
 = 3.6.6 =
 * Added French translation
@@ -166,6 +167,6 @@ Note: This version is not compatible with earlier versions.
 == Upgrade Notice ==
 
 = 4.0 =
-BP Profile Search 4.0 is not compatible with earlier versions. After you upgrade to version 4, you'll have to configure your BP Profile Search forms and widgets from scratch, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
+BP Profile Search 4.0 is not compatible with earlier versions. After you upgrade to version 4, you'll have to configure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
 
 In a multisite installation, the BP Profile Search settings are now in the individual Site Admin menus, and no longer in the Network Admin menu.
