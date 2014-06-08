@@ -260,18 +260,19 @@ function bps_get_widget ($form)
 
 function bps_get_options ($id)
 {
-	global $wpdb;
 	static $options = array ();
 
 	if (isset ($options[$id]))  return $options[$id];
 
-	$table = $wpdb->base_prefix. 'bp_xprofile_fields';
-	$sql = "SELECT parent_id, name FROM $table WHERE type = 'option' ORDER BY parent_id, option_order";
-	$rows = $wpdb->get_results ($sql);
+	$field = new BP_XProfile_Field ($id);
+	if (empty ($field->id))  return array ();
 
-	foreach ($rows as $row)
-		$options[$row->parent_id][] = $row->name;
+	$options[$id] = array ();
+	$rows = $field->get_children ();
+	if (is_array ($rows))
+		foreach ($rows as $row)
+			$options[$id][] = $row->name;
 
-	return isset ($options[$id])? $options[$id]: array ();
+	return $options[$id];
 }
 ?>

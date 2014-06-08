@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 2.0.1
-Stable tag: 4.0
+Stable tag: 4.0.1
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -15,11 +15,14 @@ You can insert the search forms in your Members Directory page, in a sidebar or 
 
 When visitors click the *Search* button, they are redirected to your Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
 
-= Translations =
+= Up to date translations =
 
-* French (fr_FR), by Jean-Pierre Michaud
 * Italian (it_IT)
 * Russian (ru_RU), by [Ivan Dyakov](http://olymproject.org/)
+
+= To be updated =
+
+* French (fr_FR), by Jean-Pierre Michaud
 * Serbo-Croatian (sr_RS), by [Borisa Djuraskovic, WebHostingHub](http://www.webhostinghub.com/)
 * Spanish (es_ES), by [Andrew Kurtis, WebHostingHub](http://www.webhostinghub.com/)
 
@@ -76,15 +79,18 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 4.0.1 =
+* Fixed bug with field options not respecting sort order
+* Fixed bug with search strings containing ampersand (&)
+
+Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
+In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.
+
 = 4.0 =
 * Added support for multiple forms
 * Added ability to export/import forms
 * Added selection of the form *method* attribute
 * Updated Italian and Russian translations
-
-Note: Version 4 is not compatible with version 3. After you upgrade to version 4, you'll have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
-In a multisite installation, you'll find the BP Profile Search settings page in the individual Site Admin(s), and no longer in the Network Admin.
-
 = 3.6.6 =
 * Added French translation
 = 3.6.5 =
@@ -171,5 +177,5 @@ In a multisite installation, you'll find the BP Profile Search settings page in 
 == Upgrade Notice ==
 
 = 4.0 =
-Note: Version 4 is not compatible with version 3. After you upgrade to version 4, you'll have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
-In a multisite installation, you'll find the BP Profile Search settings page in the individual Site Admin(s), and no longer in the Network Admin.
+Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
+In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.

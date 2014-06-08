@@ -196,6 +196,7 @@ function bps_search ($posted)
 				{
 				case 'textbox':
 				case 'textarea':
+					$value = str_replace ('&', '&amp;', $value);
 					$escaped = '%'. esc_sql (like_escape ($value)). '%';
 					if (in_array ('like', $posted['options']))
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
@@ -209,6 +210,7 @@ function bps_search ($posted)
 
 				case 'selectbox':
 				case 'radio':
+					$value = str_replace ('&', '&amp;', $value);
 					$sql .= $wpdb->prepare ("AND value = %s", $value);
 					break;
 
@@ -218,6 +220,7 @@ function bps_search ($posted)
 					$like = array ();
 					foreach ($values as $value)
 					{
+						$value = str_replace ('&', '&amp;', $value);
 						$escaped = '%"'. esc_sql (like_escape ($value)). '"%';
 						$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
 					}
