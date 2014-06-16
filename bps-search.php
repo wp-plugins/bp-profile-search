@@ -198,7 +198,7 @@ function bps_search ($posted)
 				case 'textarea':
 					$value = str_replace ('&', '&amp;', $value);
 					$escaped = '%'. esc_sql (like_escape ($value)). '%';
-					if (in_array ('like', $posted['options']))
+					if (isset ($posted['options']) && in_array ('like', $posted['options']))
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else					
 						$sql .= $wpdb->prepare ("AND value = %s", $value);

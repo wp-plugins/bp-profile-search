@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
 Tested up to: BP 2.0.1
-Stable tag: 4.0.1
+Stable tag: 4.0.2
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -79,13 +79,15 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
-= 4.0.1 =
-* Fixed bug with field options not respecting sort order
-* Fixed bug with search strings containing ampersand (&)
+= 4.0.2 =
+* Fixed PHP warning when using the *SAME* search mode
 
 Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
 In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.
 
+= 4.0.1 =
+* Fixed bug with field options not respecting sort order
+* Fixed bug with search strings containing ampersand (&)
 = 4.0 =
 * Added support for multiple forms
 * Added ability to export/import forms
@@ -176,6 +178,6 @@ In a multisite installation, the BP Profile Search settings page is in the indiv
 
 == Upgrade Notice ==
 
-= 4.0 =
+= 4.0.2 =
 Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
 In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.
