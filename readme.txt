@@ -1,72 +1,143 @@
 === BP Profile Search ===
 Contributors: dontdream
-Tags: buddypress, member, members, friend, friends, user, users, profile, profiles, search, filter
+Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: BP 1.8
-Tested up to: BP 1.8.1
-Stable tag: 3.5.2
+Tested up to: BP 2.0.1
+Stable tag: 4.0.2
 
-Adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
+Let visitors search your BuddyPress Members Directory and their Friends list.
 
 == Description ==
 
-BP Profile Search adds a configurable search form to your BuddyPress site, so visitors can find site members searching their extended profiles.
+With BP Profile Search you can build one or more customized forms to let visitors search your BuddyPress Members Directory and, if they are Members, their Friends list.
 
-You can insert the search form in the Members Directory page, in a sidebar or widget area, or in any post or page.
+You can insert the search forms in your Members Directory page, in a sidebar or widget area, or in any post or page without modifying your theme.
 
-In all three cases when visitors click the 'Search' button, they are redirected to your Members Directory page showing their search results. The 'All Members' tab shows all the results, while the 'My Friends' tabs shows the results found among your visitor's friends.
+When visitors click the *Search* button, they are redirected to your Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
+
+= Up to date translations =
+
+* Italian (it_IT)
+* Russian (ru_RU), by [Ivan Dyakov](http://olymproject.org/)
+
+= To be updated =
+
+* French (fr_FR), by Jean-Pierre Michaud
+* Serbo-Croatian (sr_RS), by [Borisa Djuraskovic, WebHostingHub](http://www.webhostinghub.com/)
+* Spanish (es_ES), by [Andrew Kurtis, WebHostingHub](http://www.webhostinghub.com/)
 
 == Installation ==
 
-After the standard manual or automatic plugin installation procedure, you'll be able to access the plugin settings page *Users -> Profile Search*.
+After the standard plugin installation procedure, you'll be able to access the plugin settings page *Users -> Profile Search*, where you can build and customize your search forms.
 
-= Configuration =
+= Form Fields =
 
-In the plugin settings page you have the following options:
+In this section you can:
 
-* Specify the HTML text for the form header and welcome message.
+* Add and remove form fields
+* Enter the field label and description, or leave them empty to use the default
+* Enable the *Value Range Search* for numeric fields, or the *Age Range Search* for date fields
+* Change the order of the fields
 
-* Enable the toggle form feature.
+= Add to Directory =
 
-* Select the profile fields to include in the search form (currently the *datebox* profile fields are not supported);
+With this option you can insert your search form in your Members Directory page. If you enable *Add to Directory*, you can also:
 
-* If your extended profiles include a numeric field, enable the Value Range search, so your visitors can specify the minimum and maximum value for their search.
+* Enter the HTML text for the optional form header
+* Enable the *Toggle Form* option
+* Enter the text for the *Toggle Form* button
 
-* If your extended profiles include a birth date field, enable the Age Range search, so your visitors can specify the minimum and maximum age for their search.
+= Form Method =
 
-* Insert the search form in the Members Directory page.
+With this option you can select your search form *method* attribute, POST or GET.
 
-* Select the search mode for text fields, between *partial match*, where a search for *John* matches field values of *John*, *Johnson*, *Long John Silver*, and so on, and *exact match*, where a search for *John* matches the field value *John* only.
+If you choose GET, the form data are sent as URL variables and users can bookmark the results page; if you choose POST, the form data are not visible in the URL and it's not possible to bookmark the results page.
 
-In both search modes the wildcard characters *% (percent sign)*, matching zero or more characters, and *_ (underscore)*, matching exactly one character, are available to your visitors to better specify their search.
+= Text Search Mode =
 
-= Displaying the search form =
+With this option you can select your text search mode, between:
 
-There are three different ways to integrate your BP Profile Search form in your BuddyPress site. You can insert the form:
+* LIKE: a search for *John* finds *John*, *Johnson*, *Long John Silver*, and so on
+* SAME: a search for *John* finds *John* only
 
-* In your Members Directory page, using the above mentioned option
+In both modes, two wildcard characters are available:
 
-* In a sidebar or widget area, using the ***BP Profile Search*** widget
+* Percent sign (%): matches any text, or no text at all
+* Underscore (_): matches any single character
 
-* In a post or page, using the shortcode **[bp_profile_search_form]**
+= Display your search form =
+
+After you build your search form, you can display it:
+
+* In your Members Directory page, selecting the option *Add to Directory*
+* In a sidebar or widget area, using the widget *Profile Search*
+* In a post or page, using the shortcode **[bps_display form=ID]** (*)
+* Anywhere in your theme, using the PHP code<br>
+**&lt;?php do_action ('bps_display_form', ID); ?&gt;** (*)
+
+(*) Replace ID with your actual form ID.
 
 == Changelog ==
 
+= 4.0.2 =
+* Fixed PHP warning when using the *SAME* search mode
+
+Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
+In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.
+
+= 4.0.1 =
+* Fixed bug with field options not respecting sort order
+* Fixed bug with search strings containing ampersand (&)
+= 4.0 =
+* Added support for multiple forms
+* Added ability to export/import forms
+* Added selection of the form *method* attribute
+* Updated Italian and Russian translations
+= 3.6.6 =
+* Added French translation
+= 3.6.5 =
+* Fixed bug when searching in a *number* profile field type
+= 3.6.4 =
+* Added support for custom profile field types, see [documentation](http://dontdream.it/bp-profile-search/custom-profile-field-types/)
+= 3.6.3 =
+* Reduced the number of database queries
+= 3.6.2 =
+* Updated for the *number* profile field type (BP 2.0)
+= 3.6.1 =
+* Fixed PHP warnings after upgrade
+= 3.6 =
+* Redesigned settings page, added Help section
+* Added customization of field label and description
+* Added *Value Range Search* for multiple numeric fields
+* Added *Age Range Search* for multiple date fields
+* Added reordering of form fields
+* Updated Italian translation
+* Updated Russian translation
+= 3.5.6 =
+* Replaced deprecated $wpdb->escape() with esc_sql()
+* Added *Clear* link to reset the search filters
+= 3.5.5 =
+* Fixed the CSS for widget forms and shortcode generated forms
+= 3.5.4 =
+* Added Serbo-Croatian translation
+= 3.5.3 =
+* Added Spanish, Russian and Italian translations
 = 3.5.2 =
 * Fixed a pagination bug introduced in 3.5.1
 = 3.5.1 =
 * Fixed a few conflicts with other plugins and themes
 = 3.5 =
-* Added an option to automatically add the search form to your Members Directory page
+* Added the *Add to Directory* option
 * Fixed a couple of bugs with multisite installations
 * Ready for localization
 * Requires BuddyPress 1.8 or higher
 = 3.4.1 =
-* Added *selectbox* profile fields as candidates for the Value Range Search feature
+* Added *selectbox* profile fields as candidates for the *Value Range Search*
 = 3.4 =
-* Added the Value Range Search feature (Contributor: Florian Shießl)
+* Added the *Value Range Search* option (Contributor: Florian Shießl)
 = 3.3 =
 * Added pagination for search results
-* Added searching in the 'My Friends' tab of the Members Directory
+* Added searching in the *My Friends* tab of the Members Directory
 * Removed the *Filtered Members List* option in the *Advanced Options* tab
 * Requires BuddyPress 1.7 or higher
 = 3.2 =
@@ -76,10 +147,10 @@ There are three different ways to integrate your BP Profile Search form in your 
 * Fixed the search when field options contain trailing spaces
 * Fixed the search when field type is changed after creation
 = 3.0 =
-* Added the BP Profile Search widget
+* Added the *Profile Search* widget
 * Added the [bp_profile_search_form] shortcode
 = 2.8 =
-* Fixed the Age Range Search feature
+* Fixed the *Age Range Search*
 * Fixed the search form for required fields
 * Removed field descriptions from the search form
 * Requires BuddyPress 1.5 or higher
@@ -91,18 +162,22 @@ There are three different ways to integrate your BP Profile Search form in your 
 = 2.5 =
 * Updated for BuddyPress 1.2.8 multisite installations
 = 2.4 =
-* Changed the file names to allow activation in some installations
 * Added the *Filtered Members List* option in the *Advanced Options* tab
 = 2.3 =
-* Added the choice between partial match and exact match for text searches
-* Added a workaround so renaming the plugin folder is no longer required
+* Added the choice between *Partial match* and *Exact match* for text searches
 = 2.2 =
-* Added the Age Range Search feature
+* Added the *Age Range Search* option
 = 2.1 =
-* Added the option to show/hide the search form
+* Added the *Toggle Form* option to show/hide the search form
 * Fixed a bug where no results were found in some installations
 = 2.0 =
 * Added support for *multiselectbox* and *checkbox* profile fields
 * Added support for % and _ wildcard characters in text searches
 = 1.0 =
 * First version released to the WordPress Plugin Directory
+
+== Upgrade Notice ==
+
+= 4.0.2 =
+Note: Version 4 is not compatible with version 3. When you first upgrade to version 4, you have to reconfigure your BP Profile Search forms and widgets, and modify any BP Profile Search shortcodes and *do_action* codes you are using.
+In a multisite installation, the BP Profile Search settings page is in the individual Site Admin(s), and no longer in the Network Admin.
