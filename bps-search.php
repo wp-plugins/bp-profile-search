@@ -197,7 +197,7 @@ function bps_search ($posted)
 				case 'textbox':
 				case 'textarea':
 					$value = str_replace ('&', '&amp;', $value);
-					$escaped = '%'. esc_sql (like_escape ($value)). '%';
+					$escaped = '%'. bps_esc_like ($value). '%';
 					if (isset ($posted['options']) && in_array ('like', $posted['options']))
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else					
@@ -221,7 +221,7 @@ function bps_search ($posted)
 					foreach ($values as $value)
 					{
 						$value = str_replace ('&', '&amp;', $value);
-						$escaped = '%"'. esc_sql (like_escape ($value)). '"%';
+						$escaped = '%'. bps_esc_like ($value). '%';
 						$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
 					}
 					$sql .= 'AND ('. implode (' OR ', $like). ')';
@@ -286,5 +286,10 @@ function bps_user_query ($query)
 	}
 
 	return $query;
+}
+
+function bps_esc_like ($text)
+{
+    return addcslashes ($text, '_%\\');
 }
 ?>

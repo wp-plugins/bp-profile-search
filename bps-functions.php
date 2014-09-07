@@ -221,6 +221,13 @@ function bps_get_fields ()
 
 	if (count ($groups))  return array ($groups, $fields);
 
+	if (!function_exists ('bp_has_profile'))
+	{
+		printf ('<p class="bps_error">'. __('%s: The BuddyPress Extended Profiles component is not active.', 'bps'). '</p>',
+			'<strong>BP Profile Search '. BPS_VERSION. '</strong>');
+		return array ($groups, $fields);
+	}
+
 	if (bp_has_profile ('hide_empty_fields=0'))
 	{
 		while (bp_profile_groups ())

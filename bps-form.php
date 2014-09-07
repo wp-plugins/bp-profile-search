@@ -20,8 +20,14 @@ function bps_add_form ()
 add_action ('bps_display_form', 'bps_display_form');
 function bps_display_form ($form, $mode='bps_action')
 {
-	$bps_options = bps_options ($form);
+	if (!function_exists ('bp_has_profile'))
+	{
+		printf ('<p class="bps_error">'. __('%s: The BuddyPress Extended Profiles component is not active.', 'bps'). '</p>',
+			'<strong>BP Profile Search '. BPS_VERSION. '</strong>');
+		return false;
+	}
 
+	$bps_options = bps_options ($form);
 	if (empty ($bps_options['field_name']))
 	{
 		printf ('<p class="bps_error">'. __('%s: Form %d was not found, or has no fields.', 'bps'). '</p>',
