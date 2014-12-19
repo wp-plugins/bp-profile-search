@@ -2,7 +2,7 @@
 Contributors: dontdream
 Tags: buddypress, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: 3.6
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: 4.0.3
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
