@@ -3,14 +3,14 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search your BuddyPress Members Directory.
-Version: 4.1.1
+Version: 4.2
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 Text Domain: bps
 Domain Path: /languages
 */
 
-define ('BPS_VERSION', '4.1.1');
+define ('BPS_VERSION', '4.2');
 include 'bps-functions.php';
 
 $addons = array ('bps-custom.php');
@@ -26,24 +26,42 @@ function bps_translate ()
 	load_plugin_textdomain ('bps', false, basename (dirname (__FILE__)). '/languages');
 }
 
+add_filter ('bp_get_template_stack', 'bps_template_stack', 20);
+function bps_template_stack ($stack)
+{
+	$stack[] = dirname (__FILE__). '/templates';
+	return $stack;
+}
+
+function bps_templates ()
+{
+	$templates = array ('members/bps-form-legacy', 'members/bps-form-sample-1', 'members/bps-form-sample-2');
+	return apply_filters ('bps_templates', $templates);
+}
+
+function bps_default_template ()
+{
+	$templates = bps_templates ();
+	return $templates[0];
+}
+
 register_activation_hook (__FILE__, 'bps_activate');
 function bps_activate ()
 {
-	bps_upgrade41 ();
+	bps_upgrade42 ();
 }
 
-function bps_upgrade41 ()
+function bps_upgrade42 ()
 {
 	$posts = get_posts (array ('post_type' => 'bps_form', 'nopaging' => true));
 	foreach ($posts as $post)
 	{
 		$id = $post->ID;
-		$options = bps_options ($id);
-		if (!isset ($options['action']))
-		{
-			$options['action'] = 0;
-			update_post_meta ($id, 'bps_options', $options);
-		}
+		$meta = bps_options ($id);
+		$changed = false;
+		if (!isset ($meta['action']))  { $meta['action'] = 0; $changed = true; }
+		if (!isset ($meta['template']))  { $meta['template'] = bps_default_template (); $changed = true; }
+		if ($changed)  update_post_meta ($id, 'bps_options', $meta);
 	}
 }
 
@@ -69,9 +87,10 @@ function bps_options ($form)
 	$default['field_desc'] = array ();
 	$default['field_range'] = array ();
 	$default['directory'] = 'No';
+	$default['template'] = bps_default_template ();
 	$default['header'] = __('<h4>Advanced Search</h4>', 'bps');
 	$default['toggle'] = 'Enabled';
-	$default['button'] = __('Toggle Form', 'bps');
+	$default['button'] = __('Hide/Show Form', 'bps');
 	$default['method'] = 'POST';
 	$default['action'] = 0;
 	$default['searchmode'] = 'LIKE';
@@ -202,6 +221,19 @@ function bps_directory ($post)
 		<option value='No' <?php selected ($options['directory'], 'No'); ?>><?php _e('No', 'bps'); ?></option>
 	</select>
 
+	<p><strong><?php _e('Form Template', 'bps'); ?></strong></p>
+	<select name="options[template]" id="template">
+<?php
+	$templates =  bps_templates ();
+	foreach ($templates as $template)
+	{
+?>
+		<option value='<?php echo $template; ?>' <?php selected ($options['template'], $template); ?>><?php echo $template; ?></option>
+<?php
+	}
+?>
+	</select>
+
 	<p><strong><?php _e('Form Header', 'bps'); ?></strong></p>
 	<label class="screen-reader-text" for="header"><?php _e('Form Header', 'bps'); ?></label>
 	<textarea name="options[header]" id="header" class="large-text code" rows="4"><?php echo $options['header']; ?></textarea>
@@ -215,7 +247,7 @@ function bps_directory ($post)
 
 	<p><strong><?php _e('Toggle Form Button', 'bps'); ?></strong></p>
 	<label class="screen-reader-text" for="button"><?php _e('Toggle Form Button', 'bps'); ?></label>
-	<input type="text" name="options[button]" id="button" value="<?php echo $options['button']; ?>" />
+	<input type="text" name="options[button]" id="button" value="<?php echo esc_attr ($options['button']); ?>" />
 <?php
 }
 
@@ -268,7 +300,7 @@ function bps_save_post ($post_id, $post)
 	if (empty ($_POST['options']) && empty ($_POST['bps_options']))  return false;
 
 	$options = bps_update_fields ();
-	foreach (array ('directory', 'header', 'toggle', 'button', 'method', 'action', 'searchmode') as $key)
+	foreach (array ('directory', 'template', 'header', 'toggle', 'button', 'method', 'action', 'searchmode') as $key)
 		$options[$key] = stripslashes ($_POST['options'][$key]);
 
 	update_post_meta ($post_id, 'bps_options', $options);

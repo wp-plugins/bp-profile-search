@@ -35,88 +35,6 @@ function bps_minmax ($request, $id, $type)
 	return array ($min, $max);
 }
 
-add_action ('bp_before_directory_members_content', 'bps_filters');
-function bps_filters ()
-{
-	$request = bps_get_request ();
-	if (empty ($request))  return false;
-
-	$done = array ();
-	$filters = '';
-	$action = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-
-	list ($x, $fields) = bps_get_fields ();
-	foreach ($request as $key => $value)
-	{
-		if ($value === '')  continue;
-
-		$split = explode ('_', $key);
-		if ($split[0] != 'field')  continue;
-
-		$id = $split[1];
-		$op = isset ($split[2])? $split[2]: 'eq';
-		if (isset ($done[$id]) || empty ($fields[$id]))  continue;
-	
-		$field = $fields[$id];
-		$field_type = apply_filters ('bps_field_criteria_type', $field->type, $field);
-		$field_label = isset ($request['label_'. $id])? esc_html (stripslashes ($request['label_'. $id])): $field->name;
-
-		if (bps_custom_field ($field_type))
-		{
-			$output = "The search criteria for the <em>$field_type</em> field type go here<br/>\n";
-			$output = apply_filters ('bps_field_criteria', $output, $field, $key, $value, $field_label);
-			$filters .= $output;
-		}
-		else if ($op == 'min' || $op == 'max')
-		{
-			if ($field_type == 'multiselectbox' || $field_type == 'checkbox')  continue;
-
-			list ($min, $max) = bps_minmax ($request, $id, $field_type);
-			if ($min === '' && $max === '')  continue;
-
-			$filters .= "<strong>$field_label:</strong>";
-			if ($min !== '')
-				$filters .= " <strong>". __('min', 'bps'). "</strong> $min";
-			if ($max !== '')
-				$filters .= " <strong>". __('max', 'bps'). "</strong> $max";
-			$filters .= "<br/>\n";
-		}
-		else if ($op == 'eq')
-		{
-			if ($field_type == 'datebox')  continue;
-
-			switch ($field_type)
-			{
-			case 'textbox':
-			case 'number':
-			case 'textarea':
-			case 'selectbox':
-			case 'radio':
-				$filters .= "<strong>$field_label:</strong> ". esc_html (stripslashes ($value)). "<br/>\n";
-				break;
-
-			case 'multiselectbox':
-			case 'checkbox':
-				$values = $value;
-				$filters .= "<strong>$field_label:</strong> ". esc_html (implode (', ', stripslashes_deep ($values))). "<br/>\n";
-				break;
-			}
-		}
-		else continue;
-
-		$done [$id] = true;
-	}
-
-	if (count ($done) == 0)  return false;
-
-	echo "\n";
-	echo "<p class='bps_filters'>\n". $filters;
-	echo "<a href='$action'>". __('Clear', 'buddypress'). "</a><br/>\n";
-	echo "</p>\n";
-
-	return true;
-}
-
 function bps_search ($request)
 {
 	global $bp, $wpdb;
@@ -187,9 +105,11 @@ function bps_search ($request)
 				{
 				case 'textbox':
 				case 'textarea':
+				case 'url':
 					$value = str_replace ('&', '&amp;', $value);
 					$escaped = '%'. bps_esc_like ($value). '%';
-					if (isset ($request['options']) && in_array ('like', $request['options']))
+					$meta = bps_options ($request['bp_profile_search']);
+					if ($meta['searchmode'] != 'EQUAL')
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $value);
@@ -207,7 +127,7 @@ function bps_search ($request)
 
 				case 'multiselectbox':
 				case 'checkbox':
-					$values = $value;
+					$values = (array)$value;
 					$like = array ();
 					foreach ($values as $value)
 					{

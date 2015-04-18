@@ -13,10 +13,10 @@ __('Configure your profile search form, then display it:', 'bps'). '
 <ul>
 <li>'. sprintf (__('In its Members Directory page, selecting the option %s', 'bps'), '<em>'. __('Add to Directory', 'bps'). '</em>'). '</li>
 <li>'. sprintf (__('In a sidebar or widget area, using the widget %s', 'bps'), '<em>'. __('Profile Search', 'bps'). '</em>'). '</li>
-<li>'. sprintf (__('In a post or page, using the shortcode %s (*)', 'bps'), '<strong>[bps_display form=ID]</strong>'). '</li>
-<li>'. sprintf (__('Anywhere in your theme, using the PHP code %s (*)', 'bps'), "<strong>&lt;?php do_action ('bps_display_form', ID); ?&gt;</strong>"). '</li>
+<li>'. sprintf (__('In a post or page, using the shortcode %s (*)', 'bps'), '<strong>[bps_display form=id template=tpl]</strong>'). '</li>
+<li>'. sprintf (__('Anywhere in your theme, using the PHP code %s (*)', 'bps'), "<strong>&lt;?php do_action ('bps_display_form', id, tpl); ?&gt;</strong>"). '</li>
 </ul>'.
-__('(*) Replace ID with your actual form ID.', 'bps'). '
+__('(*) Replace <em>id</em> with your actual form ID, and <em>tpl</em> with the name of the form template you want to use.', 'bps'). '
 </p>';
 
 	$title_01 = __('Form Fields', 'bps');
@@ -31,7 +31,7 @@ __('Select the profile fields to show in your search form.', 'bps'). '
 </ul>'.
 __('Please note:', 'bps'). '
 <ul>
-<li>'. __('To leave a label or description blank, enter a single dash (-) character', 'bps'). '</li>
+<li>'. __('To leave a field description blank, enter a single dash (-) character', 'bps'). '</li>
 <li>'. __('The <em>Age Range Search</em> option is mandatory for date fields', 'bps'). '</li>
 <li>'. __('The <em>Value Range Search</em> works for numeric fields only', 'bps'). '</li>
 <li>'. __('The <em>Value Range Search</em> is not supported for <em>Multi Select Box</em> and <em>Checkboxes</em> fields', 'bps'). '</li>
@@ -43,6 +43,7 @@ __('Please note:', 'bps'). '
 <p>'.
 __('Insert your search form in its Members Directory page.', 'bps'). '
 <ul>
+<li>'. __('Select the form template to use', 'bps'). '</li>
 <li>'. __('Specify the optional form header', 'bps'). '</li>
 <li>'. __('Enable the <em>Toggle Form</em> feature', 'bps'). '</li>
 <li>'. __('Enter the text for the <em>Toggle Form</em> button', 'bps'). '</li>
@@ -265,7 +266,7 @@ function bps_get_fields ()
 
 function bps_custom_field ($type)
 {
-	return !in_array ($type, array ('textbox', 'number', 'textarea', 'selectbox', 'multiselectbox', 'radio', 'checkbox', 'datebox'));
+	return !in_array ($type, array ('textbox', 'number', 'url', 'textarea', 'selectbox', 'multiselectbox', 'radio', 'checkbox', 'datebox'));
 }
 
 function bps_get_widget ($form)
@@ -293,7 +294,7 @@ function bps_get_options ($id)
 	$rows = $field->get_children ();
 	if (is_array ($rows))
 		foreach ($rows as $row)
-			$options[$id][] = $row->name;
+			$options[$id][] = stripslashes (trim ($row->name));
 
 	return $options[$id];
 }

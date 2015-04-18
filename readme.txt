@@ -3,7 +3,7 @@ Contributors: dontdream
 Tags: buddypress, directory, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: 3.6
 Tested up to: 4.1.1
-Stable tag: 4.1.1
+Stable tag: 4.2
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -15,7 +15,7 @@ You can insert the search forms in a Members Directory page, in a sidebar or wid
 
 When visitors click the *Search* button, they are redirected to your form's Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
 
-Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.2.1
+Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.2.2.1
 
 == Installation ==
 
@@ -48,6 +48,7 @@ You can create a custom Members Directory page using the shortcode **[bps_direct
 
 With this option you can insert your search form in its Members Directory page. If you enable *Add to Directory*, you can also:
 
+* Select the form template to use
 * Enter the HTML text for the optional form header
 * Enable the *Toggle Form* option
 * Enter the text for the *Toggle Form* button
@@ -70,19 +71,18 @@ After you build your search form, you can display it:
 
 * In its Members Directory page, selecting the option *Add to Directory*
 * In a sidebar or widget area, using the widget *Profile Search*
-* In a post or page, using the shortcode **[bps_display form=ID]** (*)
+* In a post or page, using the shortcode **[bps_display form=id template=tpl]** (*)
 * Anywhere in your theme, using the PHP code<br>
-**&lt;?php do_action ('bps_display_form', ID); ?&gt;** (*)
+**&lt;?php do_action ('bps_display_form', id, tpl); ?&gt;** (*)
 
-(*) Replace ID with your actual form ID.
+(*) Replace *id* with your actual form ID, and *tpl* with the name of the form template you want to use.
 
 == Changelog ==
 
+= 4.2 =
+* Added the ability to use form templates
 = 4.1.1 =
 * Fixed bug with field labels containing quotes
-
-Note: If you are upgrading from version 4.0.x, you have to update your existing forms with your Directory page selection. Go to *Users -> Profile Search*, *Edit* each form, select its *Form Action (Results Directory)* and *Update*.
-
 = 4.1 =
 * Added ability to create custom Members Directory pages, and to use them as search results pages
 = 4.0.3 =
