@@ -75,7 +75,7 @@ After you build your search form, you can display it:
 * Anywhere in your theme, using the PHP code<br>
 **&lt;?php do_action ('bps_display_form', id, tpl); ?&gt;** (*)
 
-(*) Replace *id* with your actual form ID, and *tpl* with the name of the form template you want to use.
+(*) Replace 'id' with your actual form ID, and 'tpl' with the name of the form template you want to use.
 
 == Changelog ==
 
