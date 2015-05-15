@@ -132,7 +132,7 @@ function bps_search ($request)
 					foreach ($values as $value)
 					{
 						$value = str_replace ('&', '&amp;', $value);
-						$escaped = '%'. bps_esc_like ($value). '%';
+						$escaped = '%:"'. bps_esc_like ($value). '";%';
 						$like[] = $wpdb->prepare ("value = %s OR value LIKE %s", $value, $escaped);
 					}
 					$sql .= 'AND ('. implode (' OR ', $like). ')';

@@ -2,8 +2,8 @@
 Contributors: dontdream
 Tags: buddypress, directory, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: 3.6
-Tested up to: 4.1.1
-Stable tag: 4.2
+Tested up to: 4.2.2
+Stable tag: 4.2.1
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
 
@@ -15,7 +15,7 @@ You can insert the search forms in a Members Directory page, in a sidebar or wid
 
 When visitors click the *Search* button, they are redirected to your form's Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
 
-Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.2.2.1
+Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.2.3.1
 
 == Installation ==
 
@@ -79,12 +79,15 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 4.2.1 =
+* Fixed bug when searching in a *multiselectbox* profile field type
 = 4.2 =
-* Added the ability to use form templates
+* Added ability to use form templates
 = 4.1.1 =
 * Fixed bug with field labels containing quotes
 = 4.1 =
-* Added ability to create custom Members Directory pages, and to use them as search results pages
+* Added ability to create custom Members Directory pages
+* Added ability to use them as custom search results pages
 = 4.0.3 =
 * Fixed PHP fatal error when BP component *Extended Profiles* was not active
 * Replaced deprecated like_escape()
