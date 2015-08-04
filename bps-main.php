@@ -3,14 +3,14 @@
 Plugin Name: BP Profile Search
 Plugin URI: http://www.dontdream.it/bp-profile-search/
 Description: Search your BuddyPress Members Directory.
-Version: 4.2.2
+Version: 4.2.3
 Author: Andrea Tarantini
 Author URI: http://www.dontdream.it/
 Text Domain: bps
 Domain Path: /languages
 */
 
-define ('BPS_VERSION', '4.2.2');
+define ('BPS_VERSION', '4.2.3');
 include 'bps-functions.php';
 
 $addons = array ('bps-custom.php');
@@ -57,7 +57,7 @@ function bps_upgrade42 ()
 	foreach ($posts as $post)
 	{
 		$id = $post->ID;
-		$meta = bps_options ($id);
+		$meta = bps_meta ($id);
 		$changed = false;
 		if (!isset ($meta['action']))  { $meta['action'] = 0; $changed = true; }
 		if (!isset ($meta['template']))  { $meta['template'] = bps_default_template (); $changed = true; }
@@ -76,7 +76,7 @@ function bps_row_meta ($links, $file)
 	return $links;
 }
 
-function bps_options ($form)
+function bps_meta ($form)
 {
 	static $options;
 	if (isset ($options[$form]))  return $options[$form];
@@ -121,10 +121,32 @@ function bps_post_type ()
 		'show_in_menu' => 'users.php',
 		'supports' => array ('title'),
 		'rewrite' => false,
+		'map_meta_cap' => true,
+		'capability_type' => 'bps_form',
 		'query_var' => false,
 	);
 
 	register_post_type ('bps_form', $args);
+
+	$form_caps = array (
+		'administrator' => array (
+			'delete_bps_forms',
+			'delete_others_bps_forms',
+			'delete_published_bps_forms',
+			'edit_bps_forms',
+			'edit_others_bps_forms',
+			'edit_published_bps_forms',
+			'publish_bps_forms',
+		)
+	);
+
+	$form_caps = apply_filters ('bps_form_caps', $form_caps);
+	foreach ($form_caps as $key => $caps)
+	{
+		$role = get_role ($key);
+		foreach ($caps as $cap)
+			if (! $role->has_cap ($cap))  $role->add_cap ($cap);
+	}
 }
 
 /******* edit.php */
@@ -149,9 +171,9 @@ add_action ('manage_posts_custom_column', 'bps_columns', 10, 2);
 // file class-wp-posts-list-table.php line 675
 function bps_columns ($column, $post_id)
 {
-	if (!bps_form ())  return;
+	if (!bps_screen ())  return;
 
-	$options = bps_options ($post_id);
+	$options = bps_meta ($post_id);
 	if ($column == 'fields')  echo count ($options['field_name']);
 	else if ($column == 'action')  echo $options['action']? get_the_title ($options['action']): '<strong style="color:red;">'. __('undefined', 'bps'). '</strong>';
 	else if ($column == 'directory')  _e($options['directory'], 'bps');
@@ -175,7 +197,7 @@ add_filter ('post_row_actions', 'bps_row_actions', 10, 2);
 // file class-wp-posts-list-table.php
 function bps_row_actions ($actions, $post)
 {
-	if (!bps_form ())  return $actions;
+	if (!bps_screen ())  return $actions;
 
 	unset ($actions['inline hide-if-no-js']);
 	return $actions;
@@ -191,7 +213,7 @@ function bps_sortable ($columns)
 add_filter ('request', 'bps_orderby');
 function bps_orderby ($vars)
 {
-	if (!bps_form ())  return $vars;
+	if (!bps_screen ())  return $vars;
 	if (isset ($vars['orderby']))  return $vars;
 	
 	$vars['orderby'] = 'ID';
@@ -204,7 +226,7 @@ function bps_orderby ($vars)
 add_action ('add_meta_boxes', 'bps_add_meta_boxes');
 function bps_add_meta_boxes ()
 {
-	add_meta_box ('bps_form_fields', __('Form Fields', 'bps'), 'bps_form_fields', 'bps_form', 'normal');
+	add_meta_box ('bps_fields_box', __('Form Fields', 'bps'), 'bps_fields_box', 'bps_form', 'normal');
 	add_meta_box ('bps_attributes', __('Form Attributes', 'bps'), 'bps_attributes', 'bps_form', 'side');
 	add_meta_box ('bps_directory', __('Add to Directory', 'bps'), 'bps_directory', 'bps_form', 'side');
 	add_meta_box ('bps_searchmode', __('Text Search Mode', 'bps'), 'bps_searchmode', 'bps_form', 'side');
@@ -212,7 +234,7 @@ function bps_add_meta_boxes ()
 
 function bps_directory ($post)
 {
-	$options = bps_options ($post->ID);
+	$options = bps_meta ($post->ID);
 ?>
 	<p><strong><?php _e('Add to Directory', 'bps'); ?></strong></p>
 	<label class="screen-reader-text" for="directory"><?php _e('Add to Directory', 'bps'); ?></label>
@@ -253,7 +275,7 @@ function bps_directory ($post)
 
 function bps_attributes ($post)
 {
-	$options = bps_options ($post->ID);
+	$options = bps_meta ($post->ID);
 ?>
 	<p><strong><?php _e('Form Method', 'bps'); ?></strong></p>
 	<label class="screen-reader-text" for="method"><?php _e('Form Method', 'bps'); ?></label>
@@ -283,7 +305,7 @@ function bps_attributes ($post)
 
 function bps_searchmode ($post)
 {
-	$options = bps_options ($post->ID);
+	$options = bps_meta ($post->ID);
 ?>
 	<select name="options[searchmode]" id="searchmode">
 		<option value='LIKE' <?php selected ($options['searchmode'], 'LIKE'); ?>><?php _e('LIKE', 'bps'); ?></option>
@@ -299,7 +321,7 @@ function bps_save_post ($post_id, $post)
 	if ($post->post_status != 'publish')  return false;
 	if (empty ($_POST['options']) && empty ($_POST['bps_options']))  return false;
 
-	$options = bps_update_fields ();
+	$options = bps_update_meta ();
 	foreach (array ('directory', 'template', 'header', 'toggle', 'button', 'method', 'action', 'searchmode') as $key)
 		$options[$key] = stripslashes ($_POST['options'][$key]);
 
@@ -343,17 +365,17 @@ function bps_bulk_updated_messages ($bulk_messages, $bulk_counts)
 
 /******* common */
 
-function bps_form ()
+function bps_screen ()
 {
 	global $current_screen;
 	return isset ($current_screen->post_type) && $current_screen->post_type == 'bps_form';
 }
 
-add_action ('admin_head', 'bps_css');
-function bps_css ()
+add_action ('admin_head', 'bps_admin_head');
+function bps_admin_head ()
 {
 	global $current_screen;
-	if (!bps_form ())  return;
+	if (!bps_screen ())  return;
 
 	bps_help ();
 	if ($current_screen->id == 'bps_form')  bps_admin_js ();

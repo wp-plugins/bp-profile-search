@@ -32,10 +32,12 @@ function bps_add_form ()
 		)
 	);
 
+	$args = apply_filters ('bps_form_order', $args);
 	$posts = get_posts ($args);
+
 	foreach ($posts as $post)
 	{
-		$meta = bps_options ($post->ID);
+		$meta = bps_meta ($post->ID);
 		$template = $meta['template'];
 		bps_display_form ($post->ID, $template, 'directory');
 	}
@@ -51,7 +53,7 @@ function bps_display_form ($form, $template='', $location='')
 		return false;
 	}
 
-	$meta = bps_options ($form);
+	$meta = bps_meta ($form);
 	if (empty ($meta['field_name']))
 	{
 		printf ('<p class="bps_error">'. __('%s: Form %d was not found, or has no fields.', 'bps'). '</p>',
@@ -97,7 +99,7 @@ function bps_set_request_data ($form, $location)
 {
 	global $bps_request_data;
 
-	$meta = bps_options ($form);
+	$meta = bps_meta ($form);
 	list ($x, $fields) = bps_get_fields ();
 	$request = stripslashes_deep ($_REQUEST);
 
@@ -157,7 +159,7 @@ function bps_set_request_data ($form, $location)
 		case 'radio':
 			$f->value = isset ($request[$f->code])? $request[$f->code]: '';
 			$f->options = array ();
-			$options = bps_get_options ($f->id);
+			$options = bps_field_options ($f->id);
 			foreach ($options as $option)
 				$f->options[$option] = ($option == $f->value);
 			break;
@@ -166,7 +168,7 @@ function bps_set_request_data ($form, $location)
 		case 'checkbox':
 			$f->values = isset ($request[$f->code])? (array)$request[$f->code]: array ();
 			$f->options = array ();
-			$options = bps_get_options ($f->id);
+			$options = bps_field_options ($f->id);
 			foreach ($options as $option)
 				$f->options[$option] = in_array ($option, $f->values);
 			break;

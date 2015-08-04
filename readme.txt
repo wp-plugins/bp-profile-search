@@ -2,20 +2,20 @@
 Contributors: dontdream
 Tags: buddypress, directory, member, members, user, users, friend, friends, profile, profiles, search, filter
 Requires at least: 3.6
-Tested up to: 4.2.2
-Stable tag: 4.2.2
+Tested up to: 4.2
+Stable tag: 4.2.3
 
 Let visitors search your BuddyPress Members Directory and their Friends list.
 
 == Description ==
 
-With BP Profile Search you can build custom Members search forms, build custom Members Directory pages and use them as search results pages. Visitors can search your BuddyPress Members Directory and, if they are Members, their Friends list.
+With BP Profile Search you can build custom Members search forms, and custom Members directories or search results pages. Visitors can search your BuddyPress Members directory and, if they are Members, their Friends list.
 
-You can insert the search forms in a Members Directory page, in a sidebar or widget area, or in any post or page without modifying your theme.
+You can insert the search forms in a Members directory, in a sidebar or widget area, or in any post or page without modifying your theme.
 
-When visitors click the *Search* button, they are redirected to your form's Members Directory page showing their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
+When visitors click the *Search* button, they are redirected to your form's Members directory that shows their search results. The *All Members* tab shows all the results, while the *My Friends* tab shows the results found among your visitor's friends.
 
-Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.3.1
+Requires at least BuddyPress 1.8 -- Tested up to BuddyPress 2.3.2
 
 == Installation ==
 
@@ -79,6 +79,10 @@ After you build your search form, you can display it:
 
 == Changelog ==
 
+= 4.2.3 =
+* Restricted capability to create forms to admin only
+* Added the filters *bps_form_order* and *bps_form_caps*
+* Changed the name of a few functions
 = 4.2.2 =
 * Updated templates to support member-type specific directories
 = 4.2.1 =

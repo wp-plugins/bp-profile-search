@@ -108,7 +108,7 @@ function bps_search ($request)
 				case 'url':
 					$value = str_replace ('&', '&amp;', $value);
 					$escaped = '%'. bps_esc_like ($value). '%';
-					$meta = bps_options ($request['bp_profile_search']);
+					$meta = bps_meta ($request['bp_profile_search']);
 					if ($meta['searchmode'] != 'EQUAL')
 						$sql .= $wpdb->prepare ("AND value LIKE %s", $escaped);
 					else

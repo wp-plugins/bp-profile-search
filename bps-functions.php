@@ -114,7 +114,7 @@ function bps_admin_js ()
 	wp_localize_script ('bps-admin', 'bps_strings', $translations);
 }
 
-function bps_update_fields ()
+function bps_update_meta ()
 {
 	$bps_options = array ();
 
@@ -161,9 +161,9 @@ function bps_update_fields ()
 	return $bps_options;
 }
 
-function bps_form_fields ($post)
+function bps_fields_box ($post)
 {
-	$bps_options = bps_options ($post->ID);
+	$bps_options = bps_meta ($post->ID);
 
 	list ($groups, $fields) = bps_get_fields ();
 	echo '<script>var bps_groups = ['. json_encode ($groups). '];</script>';
@@ -188,7 +188,7 @@ function bps_form_fields ($post)
 		<p id="field_div<?php echo $k; ?>" class="sortable">
 			<span>&nbsp;&Xi; </span>
 <?php
-			bps_profile_fields ("bps_options[field_name][$k]", "field_name$k", $id);
+			bps_field_select ("bps_options[field_name][$k]", "field_name$k", $id);
 ?>
 			<input type="text" name="bps_options[field_label][<?php echo $k; ?>]" id="field_label<?php echo $k; ?>" <?php echo $showlabel; ?> style="width: 16%" />
 			<input type="text" name="bps_options[field_desc][<?php echo $k; ?>]" id="field_desc<?php echo $k; ?>" <?php echo $showdesc; ?> style="width: 32%" />
@@ -204,7 +204,7 @@ function bps_form_fields ($post)
 <?php
 }
 
-function bps_profile_fields ($name, $id, $value)
+function bps_field_select ($name, $id, $value)
 {
 	list ($groups, $x) = bps_get_fields ();
 
@@ -281,7 +281,7 @@ function bps_get_widget ($form)
 	return count ($titles)? implode ('<br/>', $titles): __('unused', 'bps');
 }
 
-function bps_get_options ($id)
+function bps_field_options ($id)
 {
 	static $options = array ();
 
